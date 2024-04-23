@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package com.lucaskempe.cropy.proto;
+
+message User {
+  string name = 1;
+  string surname = 2;
+  string birthday = 3;
+  string address = 4;
+  string food = 5;
+  string image = 6;
+  int32 id = 7;
+}
+
+message Rates {
+  string provider = 1;
+  string warning = 2;
+  string terms = 3;
+  string base = 4;
+  string date = 5;
+  int32 time_last_updated = 6;
+  map<string, double> rates = 7;
+}
