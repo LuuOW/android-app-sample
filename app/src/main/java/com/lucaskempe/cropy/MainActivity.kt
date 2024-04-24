@@ -97,8 +97,10 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 items = listOf(
                                     BottomBarItem.Home,
-                                    BottomBarItem.Inspectors
-                                )
+                                    BottomBarItem.Inspectors,
+                                    BottomBarItem.Build
+                                ),
+                                context = this
                             )
                         }
                     ) {

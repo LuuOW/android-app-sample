@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
+import com.lucaskempe.cropy.ui.screens.BuildScreem
 import com.lucaskempe.cropy.ui.screens.HomeScreen
 import com.lucaskempe.cropy.ui.screens.InspectorsScreen
 import com.lucaskempe.cropy.ui.screens.MapScreen
@@ -35,6 +36,8 @@ fun NavGraph(
     ) {
 
         composable("home") { HomeScreen(modifier, navController, vm = vm) }
+
+        composable("build") { BuildScreem(navController = navController)  }
 
         navigation(
             startDestination = "user_profile/{userId}",

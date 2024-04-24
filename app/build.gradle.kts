@@ -1,9 +1,14 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import org.jetbrains.kotlin.fir.declarations.builder.buildScript
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     kotlin("kapt") // For Kotlin annotation processing
+    // secrets
+    alias(libs.plugins.mapSecrets)
 }
+
 
 android {
     namespace = "com.lucaskempe.cropy"
@@ -20,11 +25,28 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+
+
+    }
+
+
+    secrets {
+        propertiesFileName = "secrets.properties"
+        ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+        ignoreList.add("sdk.*")
     }
 
     buildTypes {
+
         debug {
-            buildConfigField("String", "geminiKey", "\"AIzaSyA84qRsXhlLUnPEWSDf-ZzHmX0qtw3QPqg\"")
+
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("glApiKey")
+            require(glApiKey.isNotEmpty()) {
+                "glApiKey is not set in local.properties"
+            }
+            buildConfigField("String", "GL_API_KEY", glApiKey)
+
         }
 
         release {
@@ -33,6 +55,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("glApiKey")
+            require(glApiKey.isNotEmpty()) {
+                "glApiKey is not set in local.properties"
+            }
+            buildConfigField("String", "GL_API_KEY", glApiKey)
         }
     }
     compileOptions {
@@ -55,8 +83,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
 }
+
 
 dependencies {
 
