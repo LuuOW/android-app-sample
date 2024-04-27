@@ -88,11 +88,3 @@ fun CustomSearch(
     )
 
 }
-
-
-@Preview
-@Composable
-fun CustomSearchPreview() {
-    val vm = UsersViewModel()
-    CustomSearch(vm = vm)
-}

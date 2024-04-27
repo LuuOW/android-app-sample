@@ -1,8 +1,8 @@
 package com.lucaskempe.cropy.ui.navigation
 
-import SelectImageScreen
 import android.content.Context
 import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -12,16 +12,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
-import com.lucaskempe.cropy.ui.screens.BuildScreem
+import com.lucaskempe.cropy.ui.screens.BuildScreen
 import com.lucaskempe.cropy.ui.screens.HomeScreen
 import com.lucaskempe.cropy.ui.screens.InspectorsScreen
 import com.lucaskempe.cropy.ui.screens.MapScreen
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 
 
+@ExperimentalMaterial3Api
 @Composable
 fun NavGraph(
     navController: NavController,
@@ -37,7 +37,7 @@ fun NavGraph(
 
         composable("home") { HomeScreen(modifier, navController, vm = vm) }
 
-        composable("build") { BuildScreem(navController = navController)  }
+        composable("build") { BuildScreen(navController = navController, vm = vm, modifier = modifier)  }
 
         navigation(
             startDestination = "user_profile/{userId}",
