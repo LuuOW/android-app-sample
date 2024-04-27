@@ -49,20 +49,23 @@ fun BuildScreen(
             sheetState = sheetState,
             content = {
                 Button(onClick = {
-                    if (vm.modalButtonState.value == ButtonState.EDIT) {
-                        vm.modalButtonState.value = ButtonState.CANCEL
-                    } else if (vm.modalButtonState.value == ButtonState.SAVE) {
-                        vm.modalButtonState.value = ButtonState.EDIT
-                    } else {
-                        vm.modalButtonState.value = ButtonState.EDIT
+                    when(vm.modalButtonState.value) {
+                        ButtonState.EDIT -> {
+                            vm.modalButtonState.value = ButtonState.CANCEL
+                        }
+                        ButtonState.SAVE -> {
+                            vm.modalButtonState.value = ButtonState.EDIT
+                        }
+                        else -> {
+                            vm.modalButtonState.value = ButtonState.EDIT
+                        }
                     }
                 }) {
-                    Text(
-                        text =
-                        if (vm.modalButtonState.value == ButtonState.EDIT) "Edit"
-                        else if (vm.modalButtonState.value == ButtonState.SAVE) "Save"
-                        else "Cancel"
-                    )
+                    Text(when(vm.modalButtonState.value) {
+                            ButtonState.EDIT -> "Edit"
+                            ButtonState.SAVE -> "Save"
+                            else -> "Cancel"
+                        })
                 }
 
                 // row of 5
