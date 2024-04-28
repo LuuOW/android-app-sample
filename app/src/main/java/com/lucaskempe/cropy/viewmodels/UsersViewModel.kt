@@ -24,14 +24,30 @@ class UsersViewModel(navController: NavHostController): ViewModel() {
     val modalButtonState = mutableStateOf(ButtonState.EDIT)
 
     val fButtons = mutableStateListOf<@Composable () -> Unit>().apply {
-        repeat(5) {
+        repeat(1) {
             add {
                 CustomButton(navController = navController, vm = this@UsersViewModel)
             }
         }
     }
 
-    val gButtons = mutableStateListOf<@Composable () -> Unit>()
+
+    val gButtons = mutableStateListOf<@Composable () -> Unit>().apply {
+        repeat(1) {
+            add {
+                CustomButton(navController = navController, vm = this@UsersViewModel)
+            }
+        }
+    }
+
+    val sButtons = mutableStateListOf<@Composable () -> Unit>().apply {
+        repeat(2) {
+            add {
+                CustomButton(navController = navController, vm = this@UsersViewModel)
+            }
+        }
+    }
+
 
     fun fetchUsers() {
         mUsers.postValue(users)

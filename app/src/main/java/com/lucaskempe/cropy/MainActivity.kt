@@ -141,6 +141,7 @@ class MainActivity : ComponentActivity() {
                                 Canvas(
                                     modifier = modifier
                                         .clickable {
+
                                         }
                                         .align(Alignment.Center)
                                         .size(35.dp)

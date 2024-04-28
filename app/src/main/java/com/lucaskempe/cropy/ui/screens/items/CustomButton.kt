@@ -36,7 +36,7 @@ fun CustomButton(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     vm: UsersViewModel,
-    onClick : () -> Unit = {},
+    onClick : () -> Unit = {}
 ) {
     val imageURLForItems = "https://icons.veryicon.com/png/o/food--drinks/food-7/pizza-23.png"
 
