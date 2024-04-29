@@ -32,12 +32,12 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController as NavHostController,
-        startDestination = "home"
+        startDestination = "home",
+        route = "home_graph"
     ) {
 
-        composable("home") { HomeScreen(modifier, navController, vm = vm) }
 
-        composable("build") { BuildScreen(navController = navController, vm = vm, modifier = modifier)  }
+        composable("home") { HomeScreen(modifier, navController, vm = vm) }
 
         navigation(
             startDestination = "user_profile/{userId}",
@@ -45,11 +45,15 @@ fun NavGraph(
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) {
 
-            composable(route = "user_profile/{userId}") {backStack ->
+            composable(route = "user_profile/{userId}") { backStack ->
                 backStack.arguments?.getString("userId")
                     ?.let { userId ->
                         vm.userId.intValue = userId.toInt()
-                        UserCardScreen(navController = navController, vm = vm, userId = userId.toInt())
+                        UserCardScreen(
+                            navController = navController,
+                            vm = vm,
+                            userId = userId.toInt()
+                        )
                     }
             }
 
@@ -62,19 +66,43 @@ fun NavGraph(
                     MapScreen(modifier, navController, context, vm = vm)
                 }
             }
+
+
+            composable("build") {
+                BuildScreen(
+                    navController = navController,
+                    vm = vm,
+                    modifier = modifier
+                )
+            }
+
+            navigation(startDestination = "inspector", route = "inspector_graph") {
+
+                composable("inspector") {
+                    InspectorsScreen(
+                        navController = navController,
+                        activityResultLauncher = activityResultLauncher,
+                        modifier = modifier,
+                        context = context
+                    )
+                }
+
+                navigation(
+                    startDestination = "inspector/image_capture",
+                    route = "image_capture_graph"
+                ) {
+                    composable("inspector/image_capture") { CameraXPreview() }
+                }
+
+            }
+
         }
 
-        composable("inspector") {
-            InspectorsScreen(
-                navController = navController,
-                activityResultLauncher = activityResultLauncher,
-                modifier = modifier)
+
+
         }
 
-        navigation(startDestination = "inspector", route = "inspector_graph") {
-            composable("inspector/image_capture") { CameraXPreview() }
-        }
 
-    }
+
 
 }

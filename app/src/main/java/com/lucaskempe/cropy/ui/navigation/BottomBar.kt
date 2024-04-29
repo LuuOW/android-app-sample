@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -47,18 +48,24 @@ fun BottomBar(
     context:Context,
     modifier: Modifier
 ) {
-    BottomNavigation {
+    BottomNavigation(
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         items.forEach { screen ->
             BottomNavigationItem(
-                modifier = modifier
-                    .padding(horizontal = 1.dp)
-                ,
+                modifier = modifier,
+                enabled = if (screen.route == "inspectors") {
+                    false
+                } else {
+                    true
+                },
                 icon = {
                     Icon(
                         screen.icon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier
                     )
                 },
                 label = { screen.title },
@@ -69,6 +76,7 @@ fun BottomBar(
 
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
+                            inclusive=false
                         }
                         launchSingleTop = true
                         restoreState = true

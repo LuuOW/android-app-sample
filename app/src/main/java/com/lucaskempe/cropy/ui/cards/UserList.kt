@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.ui.navigateUp
 import androidx.room.util.query
 import coil.compose.AsyncImage
@@ -55,7 +56,20 @@ fun UserListItem(
             .fillMaxWidth()
             .clickable { // Handle card click
                 // navigate to the user's profile with the user entire user object
-                navigationController.navigate("user_profile/${user.id}")
+                navigationController.navigate("user_profile/${user.id}") {
+                    // Pop up to the start destination of the user graph to
+                    // avoid building up a large stack of destinations
+                    popUpTo(navigationController.graph.findStartDestination().id) {
+                        saveState = true
+                        inclusive=true
+                    }
+                    // Avoid multiple copies of the same destination when
+                    // reselecting the same item
+                    launchSingleTop = true
+                    // Restore state when reselecting a previously selected item
+                    restoreState = true
+
+                }
             }
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(2.dp)

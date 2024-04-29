@@ -15,6 +15,10 @@ object RetrofitClient {
     }
 
     fun getExchangeRateApi(): ExchangeRateAPI {
-        return retrofit.create(ExchangeRateAPI::class.java)
+        return if (retrofit != null) {
+            retrofit.create(ExchangeRateAPI::class.java)
+        } else {
+            throw IllegalStateException("Retrofit not initialized")
+        }
     }
 }

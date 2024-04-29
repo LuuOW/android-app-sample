@@ -61,6 +61,9 @@ fun BuildScreen(
 
                             ButtonState.SAVE -> {
                                 vm.modalButtonState.value = ButtonState.EDIT
+                                scope.launch {
+                                    sheetState.hide()
+                                }
                             }
 
                             else -> {

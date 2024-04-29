@@ -96,6 +96,10 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.location)
+    implementation("androidx.graphics:graphics-core:1.0.0-rc01")
+    implementation("androidx.graphics:graphics-path:1.0.0")
+    implementation("androidx.graphics:graphics-shapes:1.0.0-alpha05")
+    implementation(libs.androidx.constraintlayout.compose)
     val room_version = "2.6.1"
     val work_version = "2.9.0"
 
