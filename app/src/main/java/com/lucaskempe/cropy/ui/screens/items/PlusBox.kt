@@ -26,9 +26,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlusBox(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
-    vm: UsersViewModel,
-    mSheetState: SheetState
+    onClick: () -> Unit = {},
     ) {
 
     val scope = rememberCoroutineScope()
@@ -39,14 +37,9 @@ fun PlusBox(
     ) {
         IconButton(
             modifier = modifier
-                .background(color = Color.White)
                 .size(80.dp)
                 .clip(RoundedCornerShape(8.dp)) ,
-            onClick = {
-                scope.launch {
-                    mSheetState.expand()
-                }
-            }
+            onClick = { onClick() }
         ) {
             Icon(
                 Icons.Filled.Add,

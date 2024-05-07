@@ -1,7 +1,13 @@
 package com.lucaskempe.cropy.ui.cards
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -10,15 +16,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.lucaskempe.cropy.services.models.users
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 
 @Composable
 fun UserCardScreen(
-    userId: Int,
-    vm : UsersViewModel,
-    navController: NavController) {
+    vm: UsersViewModel,
+    navController: NavController,
+    onClick: () -> Unit = { }
+) {
 
-    val user = vm.getUserById(userId)
+    val user = users.find { it.id == vm.currUserId } ?: throw Exception("User not found")
 
     Card(
         modifier = Modifier
@@ -37,7 +45,7 @@ fun UserCardScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.clickable {
-                    navController.navigate("map")
+                    onClick()
                 }
             ) {
                 Text(text = "Address:", style = MaterialTheme.typography.bodyMedium)
@@ -52,4 +60,6 @@ fun UserCardScreen(
             }
         }
     }
+
+
 }

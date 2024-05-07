@@ -1,9 +1,12 @@
 package com.lucaskempe.cropy.ui.image
 
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -23,22 +26,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import compressAndSaveImage
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
-fun CameraXPreview() {
-    val context = LocalContext.current
+fun CameraXPreview(context: Context) {
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val preview = Preview.Builder().build()
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val previewView = remember {
         PreviewView(context)
     }
-
     val cameraXSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
@@ -72,31 +74,37 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     }
 
 private fun captureImage(imageCapture: ImageCapture, context: Context) {
-    val name = "CameraxImage.jpeg"
+/*
+    val name = SimpleDateFormat("my_image/jpge", Locale.US)
+        .format(System.currentTimeMillis())*/
     val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+        put(MediaStore.MediaColumns.DISPLAY_NAME, "image/jpge")
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
         put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
     }
+
+    // Create output options object which contains file + metadata
     val outputOptions = ImageCapture.OutputFileOptions
-        .Builder(
-            context.contentResolver,
+        .Builder(context.contentResolver,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        )
+            contentValues)
         .build()
+
+
     imageCapture.takePicture(
         outputOptions,
         ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults)
-            {
-                println("Successs")
+            override fun onError(exc: ImageCaptureException) {
+                Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
             }
 
-            override fun onError(exception: ImageCaptureException) {
-                println("Failed $exception")
+            override fun
+                    onImageSaved(output: ImageCapture.OutputFileResults){
+                val msg = "Photo capture succeeded: ${output.savedUri}"
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                Log.d(TAG, msg)
             }
-
-        })
+        }
+    )
 }

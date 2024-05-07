@@ -1,31 +1,29 @@
 package com.lucaskempe.cropy.services
 
-import android.app.Service
 import android.content.Intent
-import android.os.IBinder
+import androidx.lifecycle.LifecycleService
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 
-class AppService: Service() {
+class AppService : LifecycleService() {
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        fetchExchangeRates()
-        return START_NOT_STICKY
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        fetchExchangeRates()
-        return null
-    }
-
-    private fun fetchExchangeRates() {
+        val imageUri = intent?.getStringExtra("imageUri")
         val workManager = WorkManager.getInstance(applicationContext)
-
         workManager.enqueueUniqueWork(
-            "exchange_rate_fetch",
+            "one_time_work",
             ExistingWorkPolicy.KEEP,
-            OneTimeWorkRequest.Builder(AppWorker::class.java).build()
+            OneTimeWorkRequest.Builder(AppWorker::class.java)
+                .setInputData( workDataOf("imageUri" to imageUri))
+                .build()
         )
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun launchOneTimeWork() {
+
     }
 }

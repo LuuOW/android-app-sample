@@ -1,5 +1,4 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import org.jetbrains.kotlin.fir.declarations.builder.buildScript
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -7,6 +6,8 @@ plugins {
     kotlin("kapt") // For Kotlin annotation processing
     // secrets
     alias(libs.plugins.mapSecrets)
+    id("com.google.gms.google-services")
+    id("com.google.dagger.hilt.android")
 }
 
 
@@ -41,7 +42,7 @@ android {
 
         debug {
 
-            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("glApiKey")
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
@@ -56,7 +57,7 @@ android {
                 "proguard-rules.pro"
             )
 
-            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("glApiKey")
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
@@ -86,25 +87,29 @@ android {
 }
 
 
+
 dependencies {
 
-    implementation (libs.androidx.activity.compose.v140)
-    implementation(libs.androidx.datastore.core)
     implementation(libs.material)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.location)
-    implementation("androidx.graphics:graphics-core:1.0.0-rc01")
-    implementation("androidx.graphics:graphics-path:1.0.0")
-    implementation("androidx.graphics:graphics-shapes:1.0.0-alpha05")
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.lifecycle.service)
+    implementation(libs.androidx.graphics.shapes.android)
     val room_version = "2.6.1"
-    val work_version = "2.9.0"
 
-    implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
+    //firebase
+    implementation (libs.firebase.storage)
+    implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-firestore")
+
+
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
 
     implementation ("androidx.navigation:navigation-runtime-ktx:2.7.7")
 
@@ -112,39 +117,37 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose:4.3.3")
 
 
-    val camerax_version = "1.2.2"
-    implementation ("androidx.camera:camera-core:${camerax_version}")
-    implementation ("androidx.camera:camera-camera2:${camerax_version}")
-    implementation ("androidx.camera:camera-lifecycle:${camerax_version}")
-    implementation ("androidx.camera:camera-video:${camerax_version}")
+    implementation (libs.androidx.camera.core)
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.view)
 
-    implementation ("androidx.camera:camera-view:${camerax_version}")
-    implementation ("androidx.camera:camera-extensions:${camerax_version}")
+    implementation (libs.androidx.datastore.preferences)
+    implementation (libs.androidx.datastore)
+    implementation(libs.androidx.datastore.core)
 
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
-    implementation ("androidx.datastore:datastore:1.0.0")
-
-
-
+    // hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.fragment)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
 
 
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-    implementation("androidx.work:work-runtime-ktx:$work_version")
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.coil.compose)
 
     // gemini
-    implementation("com.google.ai.client.generativeai:generativeai:0.3.0")
+    implementation(libs.generativeai)
 
     //startup
-    implementation ("androidx.startup:startup-runtime:1.1.1")
+    implementation (libs.androidx.startup.runtime)
 
-    testImplementation( libs.mockito.core)
-    implementation( "org.mockito:mockito-core:5.7.0")
-
-    implementation( "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    implementation("junit:junit:4.13.2")
+    implementation( libs.kotlinx.coroutines.test)
+    implementation(libs.junit)
 
     implementation (libs.retrofit)
     implementation (libs.converter.gson)

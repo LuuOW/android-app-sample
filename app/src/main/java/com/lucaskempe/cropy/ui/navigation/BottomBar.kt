@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +46,7 @@ import com.google.android.material.bottomappbar.BottomAppBar
 fun BottomBar(
     navController: NavController, // Get NavController from your composable hierarchy
     items: List<BottomBarItem>,
-    context:Context,
+    context: Context,
     modifier: Modifier
 ) {
     BottomNavigation(
@@ -53,19 +54,14 @@ fun BottomBar(
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         items.forEach { screen ->
+            var selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             BottomNavigationItem(
                 modifier = modifier,
-                enabled = if (screen.route == "inspectors") {
-                    false
-                } else {
-                    true
-                },
                 icon = {
                     Icon(
                         screen.icon,
                         contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier
+                        modifier = modifier
                     )
                 },
                 label = { screen.title },
@@ -73,14 +69,10 @@ fun BottomBar(
                 onClick = {
 
                     navController.navigate(screen.route) {
-
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                            inclusive=false
-                        }
-                        launchSingleTop = true
                         restoreState = true
+                        launchSingleTop = true
                     }
+
                 }
 
             )

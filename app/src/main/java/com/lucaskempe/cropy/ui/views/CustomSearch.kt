@@ -14,14 +14,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 
@@ -32,11 +30,6 @@ fun CustomSearch(
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    val mQuery = remember { vm.userQuery }
-
-    fun onQueryChange(newQuery: String) {
-        mQuery.value = newQuery
-    }
 
     TextField(
         modifier =  Modifier
@@ -46,9 +39,9 @@ fun CustomSearch(
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(percent = 100)
             ),
-        value = mQuery.value,
+        value = vm.userQuery,
         onValueChange = {
-            onQueryChange(it)
+            vm.updateQuery(it)
         },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Search,
@@ -56,16 +49,16 @@ fun CustomSearch(
         ),
         keyboardActions = KeyboardActions(
             onSearch = {
-                if (mQuery.value.isNotEmpty()) {
+                if (vm.userQuery.text.isNotEmpty()) {
                     keyboardController?.hide()
                     focusManager.clearFocus()
                 }
             }
         ),
-        trailingIcon = if (mQuery.value.isNotEmpty()) {
+        trailingIcon = if (vm.userQuery.text.isNotEmpty()) {
             @Composable {
                 IconButton(onClick = {
-                    onQueryChange("")
+                    vm.updateQuery(TextFieldValue(""))
                 }) {
                     Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear")
                 }
@@ -73,7 +66,7 @@ fun CustomSearch(
         } else {
             @Composable {}
         },
-        leadingIcon = if (mQuery.value.isNotEmpty()) {
+        leadingIcon = if (vm.userQuery.text.isNotEmpty()) {
             @Composable {
                 IconButton(onClick = {
                     keyboardController?.hide()

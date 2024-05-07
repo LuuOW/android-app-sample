@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "620868709178",
+    "project_id": "cropy-d163c",
+    "storage_bucket": "cropy-d163c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620868709178:android:6cf25b116ad111f8783e03",
+        "android_client_info": {
+          "package_name": "com.lucaskempe.cropy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5Kaykj7x7Anp5M0X6ZsaGlAOosUkMqj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

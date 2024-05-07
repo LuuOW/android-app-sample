@@ -21,4 +21,13 @@ object RetrofitClient {
             throw IllegalStateException("Retrofit not initialized")
         }
     }
+
+    fun uploadImage(): ImageUploadAPI {
+        return if (retrofit != null) {
+            retrofit.create(ImageUploadAPI::class.java)
+        } else {
+            throw IllegalStateException("Retrofit not initialized")
+        }
+    }
+
 }
