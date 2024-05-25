@@ -1,5 +1,6 @@
 package com.lucaskempe.cropy.ui.navigation
 
+import android.app.Activity
 import android.content.Context
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,8 +11,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.google.firebase.auth.FirebaseAuth
+import com.lucaskempe.cropy.ui.authentication.SignUpScreen
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
+import com.lucaskempe.cropy.ui.navigation.api.DestinationGraph
 import com.lucaskempe.cropy.ui.screens.BuildScreen
 import com.lucaskempe.cropy.ui.screens.HomeScreen
 import com.lucaskempe.cropy.ui.screens.InspectorsScreen
@@ -22,13 +26,16 @@ import com.lucaskempe.cropy.viewmodels.UsersViewModel
 @ExperimentalMaterial3Api
 @Composable
 fun NavGraph(
+    activity: Activity,
     navController: NavHostController,
     modifier: Modifier,
     context: Context,
-    vm: UsersViewModel
+    auth: FirebaseAuth
 ) {
+    DestinationGraph(activity,modifier,context,auth,navController)
 
-    NavHost(
+
+ /*   NavHost(
         navController = navController,
         startDestination = "home_graph"
     ) {
@@ -81,7 +88,6 @@ fun NavGraph(
                 InspectorsScreen(
                     navController = navController,
                     //modifier = modifier,
-                    context = context,
                     vm=vm,
                     onClick = { navController.navigate("image_capture") }
                 )
@@ -102,6 +108,6 @@ fun NavGraph(
             }
         }
 
-    }
+    }*/
 
 }

@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -86,10 +87,7 @@ android {
     }
 }
 
-
-
 dependencies {
-
     implementation(libs.material)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
@@ -99,6 +97,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.graphics.shapes.android)
+    //implementation(libs.compose.preview.renderer)
+    //implementation(libs.androidx.navigation.safe.args.generator)
     val room_version = "2.6.1"
 
     //firebase
@@ -106,6 +106,18 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
+    // firebase ui
+    implementation ("com.firebaseui:firebase-ui-auth:7.2.0")
+
+    // app check google playstore
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
+    // splash
+    implementation("androidx.core:core-splashscreen:1.2.0-alpha01")
+
+    // auth
+    implementation("androidx.credentials:credentials:1.3.0-alpha04")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0-alpha04")
 
 
     implementation(libs.androidx.room.runtime)

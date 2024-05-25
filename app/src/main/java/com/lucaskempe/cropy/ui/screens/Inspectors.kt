@@ -1,8 +1,11 @@
 package com.lucaskempe.cropy.ui.screens
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -38,23 +41,21 @@ import androidx.navigation.compose.rememberNavController
 import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.ui.cards.ButtonSlider
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Composable
 fun InspectorsScreen(
     //modifier: Modifier,
     navController: NavController,
     vm: UsersViewModel,
-    context: Context,
-    onClick: () -> Unit = { }
+    onClick: () -> Unit = { },
 ) {
     val modifier = Modifier
-
-    //var selectedImage by remember { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
-            vm.selectedImageUri = it.toString()
+            if (it != null) { vm.selectedImageUri = it.toString() }
         }
     )
 
@@ -82,7 +83,7 @@ fun InspectorsScreen(
                     Text(text = "Camera", style = MaterialTheme.typography.labelSmall)
                 }
                 Spacer(modifier = modifier.padding(24.dp))
-                Button(onClick = { launcher.launch("image/*") }) {
+                Button(onClick = { launcher.launch("image/*")  }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_gallery),
                         contentDescription = "Select Image"
@@ -111,7 +112,7 @@ fun InspectorsScreen(
                     Image(
                         modifier = modifier.fillMaxSize(),
                         bitmap = BitmapFactory
-                            .decodeStream(context.contentResolver.openInputStream(Uri.parse(vm.selectedImageUri)))
+                            .decodeStream(vm.context.contentResolver.openInputStream(Uri.parse(vm.selectedImageUri)))
                             .asImageBitmap(),
                         contentDescription = "Compressed Image",
                     )
@@ -122,18 +123,4 @@ fun InspectorsScreen(
 
     }
 
-}
-
-
-@Preview
-@Composable
-fun InspectorsScreenPreview() {
-    val vm = UsersViewModel(SavedStateHandle())
-
-    InspectorsScreen(
-        navController = rememberNavController(),
-        //modifier = Modifier,
-        vm = vm,
-        context = LocalContext.current
-    )
 }

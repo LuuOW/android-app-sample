@@ -1,5 +1,6 @@
 package com.lucaskempe.cropy.di
 
+import android.content.Context
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -14,18 +15,20 @@ import dagger.assisted.Assisted
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
+import javax.inject.Inject
 
 @Module
 @InstallIn(SingletonComponent::class)
 object ViewModelModule {
 
     @Provides
-    fun provideViewModel():UsersViewModel {
-        return UsersViewModel(SavedStateHandle())
+    fun provideViewModel(@ApplicationContext context: Context):UsersViewModel {
+        return UsersViewModel(SavedStateHandle(), context = context)
     }
 
 

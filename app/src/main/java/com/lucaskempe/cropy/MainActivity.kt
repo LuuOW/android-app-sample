@@ -1,5 +1,6 @@
 package com.lucaskempe.cropy
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
@@ -57,6 +59,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.lucaskempe.cropy.services.AppService
 import com.lucaskempe.cropy.ui.cards.ButtonSlider
 import com.lucaskempe.cropy.ui.navigation.BottomBar
@@ -67,59 +70,32 @@ import com.lucaskempe.cropy.ui.views.CustomDrawer
 import com.lucaskempe.cropy.ui.views.CustomSearch
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 @ExperimentalMaterial3Api
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val REQUIRED_PERMISSIONS = mapOf(
-        "CAMERA" to false,
-        "ACCESS_COARSE_LOCATION" to false,
-        "ACCESS_FINE_LOCATION" to false,
-        "POST_NOTIFICATIONS" to false
-    )
-
-    private val activityResultLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        )
-        { permissions ->
-            // Handle Permission granted/rejected
-            var permissionGranted = true
-            permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
-                    permissionGranted = false
-            }
-        }
-
-    fun permissionLauncher () {
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permission_state ->
-
-        }
-    }
-
-
+    @Inject
+    @ApplicationContext
+    lateinit var context: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-
-        FirebaseApp.initializeApp(this )
-
+        FirebaseApp.initializeApp(context)
         val intent = Intent(this, AppService::class.java)
-
         val modifier = Modifier
-        val context = this@MainActivity
 
+        installSplashScreen()
 
         setContent {
             val vm: UsersViewModel = hiltViewModel()
             val navController: NavHostController = rememberNavController()
 
-            vm.imageUri.observeForever {
-                intent.putExtra("imageUri", it.toString())
+
+            vm.isImageSelected.apply {
+                intent.putExtra("imageUri", vm.selectedImageUri)
                 startService(intent)
             }
 
@@ -141,14 +117,16 @@ class MainActivity : ComponentActivity() {
                     )
                     val showTopBar = remember { mutableStateOf(false) }
                     val showBottomBar = remember { mutableStateOf(false) }
-
+                    val auth = FirebaseAuth.getInstance()
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
                     LaunchedEffect(navController) {
                         navController.currentBackStackEntryFlow.collect { backStackEntry ->
                             val currentRoute = backStackEntry.destination.route
-                            showTopBar.value = currentRoute in searchBarRoutes
-                            showBottomBar.value = currentRoute.equals("start") //currentRoute in bottomBarRoutes
+                            if (auth.currentUser != null) {
+                                showTopBar.value = currentRoute in searchBarRoutes
+                                showBottomBar.value = true
+                            }
                         }
                     }
 
@@ -156,9 +134,9 @@ class MainActivity : ComponentActivity() {
                         modifier = modifier,
                         drawerContent = {
                             CustomDrawer(
-                                activityResultLauncher,
                                 modifier = modifier,
-                                drawerState = drawerState
+                                drawerState = drawerState,
+                                auth=auth
                             )
                         },
                         topBar = {
@@ -171,7 +149,7 @@ class MainActivity : ComponentActivity() {
                         },
                         bottomBar = {
 
-                            if (!showBottomBar.value) {
+                            if (showBottomBar.value) {
                                 Box(
                                 ) {
                                     BottomBar(
@@ -286,11 +264,12 @@ class MainActivity : ComponentActivity() {
                         }
                     ) {
                         NavGraph(
+                            activity = this,
                             modifier = Modifier
                                 .padding(it),
                             navController = navController,
                             context = this,
-                            vm = vm
+                            auth = auth
                         )
                     }
 

@@ -3,6 +3,7 @@ package com.lucaskempe.cropy.ui.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -37,11 +38,13 @@ fun BuildScreen(
     val scope = rememberCoroutineScope()
     val openAlertDialog = remember { mutableStateOf(false) }
 
+
+
     Column(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier.fillMaxSize()
     ) {
-        ButtonGrid(vm = vm, modifier = modifier, sheetState = sheetState)
+        ButtonGrid(modifier = modifier, sheetState = sheetState, vm=vm)
     }
 
     if (sheetState.isVisible) {
@@ -62,35 +65,39 @@ fun BuildScreen(
                     modifier //.verticalScroll(scrollState)
                 ) {
 
-                    Button(onClick = {
-                        when (vm.modalButtonState.value) {
-                            ButtonState.EDIT -> {
-                                vm.modalButtonState.value = ButtonState.CANCEL
-                            }
+                    Row() {
+                        Button(onClick = {
+                            when (vm.modalButtonState.value) {
+                                ButtonState.EDIT -> {
+                                    vm.modalButtonState.value = ButtonState.CANCEL
+                                }
 
-                            ButtonState.SAVE -> {
-                                vm.modalButtonState.value = ButtonState.EDIT
-                                scope.launch {
-                                    sheetState.hide()
+                                ButtonState.SAVE -> {
+                                    vm.modalButtonState.value = ButtonState.EDIT
+                                    scope.launch {
+                                        sheetState.hide()
+                                    }
+                                }
+
+                                else -> {
+                                    vm.modalButtonState.value = ButtonState.EDIT
                                 }
                             }
-
-                            else -> {
-                                vm.modalButtonState.value = ButtonState.EDIT
-                            }
+                        }) {
+                            Text(
+                                when (vm.modalButtonState.value) {
+                                    ButtonState.EDIT -> "Edit"
+                                    ButtonState.SAVE -> "Save"
+                                    else -> "Cancel"
+                                }
+                            )
                         }
-                    }) {
-                        Text(
-                            when (vm.modalButtonState.value) {
-                                ButtonState.EDIT -> "Edit"
-                                ButtonState.SAVE -> "Save"
-                                else -> "Cancel"
-                            }
-                        )
                     }
 
-                    ButtonGrid(vm = vm, modifier = modifier, sheetState = sheetState)
+                    ButtonGrid(modifier = modifier, sheetState = sheetState, vm = vm)
                     Spacer(modifier = modifier.padding(bottom = 150.dp))
+
+
                 }
             }
         )

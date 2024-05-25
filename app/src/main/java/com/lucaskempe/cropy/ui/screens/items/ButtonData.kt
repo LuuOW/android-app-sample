@@ -7,10 +7,11 @@ import androidx.compose.ui.unit.IntOffset
 
 data class ButtonData(
     val id: Int,
-    val icon: String = "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
+    val icon: String = "",
     val title: String,
     val urlAction: String,
     var offSet: MutableState<IntOffset> = mutableStateOf(IntOffset(0,0)),
     var originalOffset: MutableState<IntOffset> = mutableStateOf(IntOffset(0,0)),
-    var enabled: Boolean = false
+    var previousOffset: MutableState<IntOffset> = mutableStateOf(IntOffset(0,0)),
+    var enabled: MutableState<Boolean> = mutableStateOf(false)
 )

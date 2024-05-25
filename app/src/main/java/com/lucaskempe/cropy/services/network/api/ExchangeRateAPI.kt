@@ -1,4 +1,4 @@
-package com.lucaskempe.cropy.services.network
+package com.lucaskempe.cropy.services.network.api
 
 import com.lucaskempe.cropy.services.models.ExchangeRateResponse
 import retrofit2.Response

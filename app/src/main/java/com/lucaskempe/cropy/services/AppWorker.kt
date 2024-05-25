@@ -9,11 +9,10 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.firebase.Firebase
-import com.google.firebase.app
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
 import com.lucaskempe.cropy.services.network.RetrofitClient
+import com.lucaskempe.cropy.services.network.api.LoginRequest
+import com.lucaskempe.cropy.services.network.api.LoginResponse
 import com.lucaskempe.cropy.services.repository.LocalDataSourceImpl
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,7 +20,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.ByteArrayOutputStream
+import java.io.File
 
 
 @HiltWorker
@@ -31,7 +40,7 @@ class AppWorker @AssistedInject constructor(
 ) : Worker(context, workerParams) {
 
     private val imageUri = inputData.getString("imageUri")
-    private val retrofitClient = RetrofitClient.uploadImage()
+    private val retrofitClient = RetrofitClient.loginAPI
 
     private val localDataSource = LocalDataSourceImpl(context)
 
@@ -39,7 +48,7 @@ class AppWorker @AssistedInject constructor(
 
     fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
         val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 40, outputStream)
         val byteArray = outputStream.toByteArray()
         outputStream.close()
         return byteArray
@@ -66,14 +75,53 @@ class AppWorker @AssistedInject constructor(
                 }
 */
 
+            fun convertBitmapToFile(context: Context, imageBitmap: Bitmap): File {
+                // Create a temporary file
+                val tempFile = File.createTempFile("image", ".jpg", context.cacheDir)
 
- /*           val response = retrofitClient.uploadImage(imageByteArray)
-            if (response.isSuccessful) {
-                val imageResponse = response.body()?.url
-                // local data source save
-            } else {
-                throw IllegalArgumentException("Name cannot be blank")
-            }*/
+                // Write the bitmap to the file
+                tempFile.outputStream().use {
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                }
+
+                // Return the temporary file
+                return tempFile
+            }
+
+            val imageFile = convertBitmapToFile(context = this@AppWorker.applicationContext, imageBitmap = imageBitmap)
+            val imageBody = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+
+            val imagePart = MultipartBody.Part.createFormData(
+                name = "image",
+                filename = imageFile.name,
+                body = imageBody
+            )
+
+            val loginCredentials = LoginRequest("lkemdaspe", "123dasda45")
+
+            CoroutineScope(Dispatchers.IO + Job()).launch {
+                retrofitClient.login(loginCredentials).enqueue(object : Callback<String> {
+
+
+                    override fun onResponse(call: Call<String>, response: Response<String>) {
+                        if (response.isSuccessful) {
+                            val loginResponse = response.body()
+                            val token = loginResponse // Handle the received token
+                            Log.d("login", "Token: $token")
+                        } else {
+                            // Handle login errors (e.g., invalid credentials)
+                            val errorBody = response.errorBody()?.string()
+                            Log.d("login", "Error: $errorBody")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<String>, t: Throwable) {
+                        // Handle network errors
+                        Log.d("login", "Error: ${t.message}")
+                    }
+                })
+            }
+
         }
 
         return Result.success()

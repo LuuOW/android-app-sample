@@ -90,13 +90,3 @@ fun HomeScreen(
 
     }
 }
-
-@Preview
-@Composable
-fun PreviewHomeScreen() {
-    val modifier = Modifier
-    HomeScreen(
-        navController = rememberNavController(),
-        vm = UsersViewModel(SavedStateHandle())
-    )
-}

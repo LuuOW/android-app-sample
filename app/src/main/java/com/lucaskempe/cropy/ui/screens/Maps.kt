@@ -112,7 +112,11 @@ fun MapScreen(
                 icon = BitmapDescriptorFactory.fromBitmap(mapDrawable.value),
                 state = MarkerState(position = city),
                 title = "Ciudad",
-                onInfoWindowClick = { onClick() },
+                onInfoWindowClick = {
+                   controller.navigate("home") {
+                        popUpTo("home") { inclusive=true }
+                    }
+                },
                 snippet = "Marcado en ciudad"
             )
 
