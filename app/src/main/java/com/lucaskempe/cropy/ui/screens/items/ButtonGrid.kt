@@ -1,10 +1,13 @@
 package com.lucaskempe.cropy.ui.screens.items
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
@@ -84,9 +87,9 @@ fun ButtonGrid(
             .fillMaxWidth()
             .height(290.dp)
     ) {
-        items(list.size) { index ->
+        itemsIndexed(list) { index, item ->
             CustomButton(
-                data = list[index],
+                data = item,
                 onAnimationFinish = {
                     scope.launch {
                         delay(400)
@@ -98,7 +101,7 @@ fun ButtonGrid(
                     }
                 },
                 onClick = {
-                    if (list[index].id == 7) {
+                    if (item.id == 7) {
                         scope.launch { sheetState.expand() }
                     } else {
                         if (vm.modalButtonState.value != ButtonState.EDIT &&
@@ -107,7 +110,7 @@ fun ButtonGrid(
                             val queueIndex = queue.removeFirst()
 
                             if(queue.isNotEmpty()) {
-                                list[index].offSet.value = gu.calculateDistance(index, list, queueIndex)
+                                //list[index].offSet.value = gu.calculateDistance(index, list, queueIndex)
                             }
 
                         }

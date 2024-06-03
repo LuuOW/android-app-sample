@@ -3,6 +3,7 @@ package com.lucaskempe.cropy.ui.navigation
 import android.app.Activity
 import android.content.Context
 import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,9 +31,10 @@ fun NavGraph(
     navController: NavHostController,
     modifier: Modifier,
     context: Context,
-    auth: FirebaseAuth
+    auth: FirebaseAuth,
+    padding: PaddingValues
 ) {
-    DestinationGraph(activity,modifier,context,auth,navController)
+    DestinationGraph(activity,modifier,context,auth,navController, padding)
 
 
  /*   NavHost(

@@ -29,6 +29,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -109,6 +110,7 @@ import com.lucaskempe.cropy.ui.authentication.SignUpScreen
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
 import com.lucaskempe.cropy.ui.screens.BuildScreen
+import com.lucaskempe.cropy.ui.screens.ChatScreen
 import com.lucaskempe.cropy.ui.screens.HomeScreen
 import com.lucaskempe.cropy.ui.screens.InspectorsScreen
 import com.lucaskempe.cropy.ui.screens.MapScreen
@@ -125,6 +127,7 @@ fun DestinationGraph(
     context: Context,
     auth: FirebaseAuth,
     navController: NavHostController,
+    padding: PaddingValues
 ) {
 
     val nvm: NavigationViewModel = hiltViewModel()
@@ -175,6 +178,14 @@ fun DestinationGraph(
         destinationList = mutableMapOf(
             //"build" to { HomeApp() }
             "build" to { BuildScreen(navController, vm, modifier) },
+        )
+    )
+
+    router.createGraph(
+        graphName = "chat_graph",
+        startGraphDestiny = "chat",
+        destinationList = mutableMapOf(
+            "chat" to { ChatScreen(navController, padding) }
         )
     )
 

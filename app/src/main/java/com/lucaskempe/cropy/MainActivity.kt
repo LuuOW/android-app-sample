@@ -108,7 +108,8 @@ class MainActivity : ComponentActivity() {
                     val bottomBarItems = listOf(
                         BottomBarItem.Home,
                         BottomBarItem.Inspectors,
-                        BottomBarItem.Build
+                        BottomBarItem.Build,
+                        BottomBarItem.Chat
                     )
                     val bottomBarRoutes = listOf(
                         "home",
@@ -262,11 +263,12 @@ class MainActivity : ComponentActivity() {
                             }
 
                         }
-                    ) {
+                    ) { innerPadding ->
                         NavGraph(
                             activity = this,
+                            padding = innerPadding,
                             modifier = Modifier
-                                .padding(it),
+                                .padding(innerPadding),
                             navController = navController,
                             context = this,
                             auth = auth
