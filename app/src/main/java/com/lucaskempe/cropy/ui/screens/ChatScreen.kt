@@ -55,7 +55,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     var messageText by remember { mutableStateOf("") }
 
     val client = WebSocketClient(
-        urlString = "ws://192.168.1.2:8082/chat?userId=user1",
+        urlString = "wss://192.168.1.2:8082/chat?userId=user1",
         onMessageReceived = {
             vm.messages.add(Message(it.messageContent, false, formatTimestampToHourMinute()))
             Log.d("messsage", "${it.messageContent}")
@@ -73,7 +73,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
         vm = vm
     )
 
-    client.connect()
+    client.connect(vm.context)
 
     Scaffold(
         modifier = modifier.padding(padding),
