@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.BottomNavigation
@@ -56,7 +57,9 @@ fun BottomBar(
         items.forEach { screen ->
             var selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             BottomNavigationItem(
-                modifier = modifier,
+                enabled = if (currentDestination?.route != "invisible_graph") true else false,
+                modifier = modifier
+                    .align(Alignment.CenterVertically),
                 icon = {
                     Icon(
                         screen.icon,
@@ -64,6 +67,7 @@ fun BottomBar(
                         modifier = modifier
                     )
                 },
+                alwaysShowLabel = true,
                 label = { screen.title },
                 selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                 onClick = {

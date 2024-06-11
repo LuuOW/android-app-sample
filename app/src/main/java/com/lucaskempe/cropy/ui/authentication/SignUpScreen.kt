@@ -55,27 +55,12 @@ fun SignUpScreen(
     activity: Activity,
     navController: NavHostController
 ) {
-    val signInLauncher = rememberLauncherForActivityResult(
-        contract = FirebaseAuthUIActivityResultContract(),
-        onResult = {
-            Log.d("SignUpScreen", "Result: ${it.resultCode}")
-        })
 
     var phoneNumberField by remember { mutableStateOf(TextFieldValue("+543815172294")) }
     var verificationCodeField by remember { mutableStateOf(TextFieldValue("")) }
     var codeSent by remember { mutableStateOf(false) }
     var timeRemaining by rememberSaveable { mutableStateOf(30) }
     var credentialId by remember { mutableStateOf("") }
-
-    var buttonColor by remember {
-        mutableStateOf(Color)
-    }
-
-    val providers = arrayListOf(EmailBuilder().build())
-    val signInIntent = AuthUI.getInstance()
-        .createSignInIntentBuilder()
-        .setAvailableProviders(providers)
-        .build()
 
     val auth = FirebaseAuth.getInstance().apply {
         firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
@@ -111,6 +96,10 @@ fun SignUpScreen(
 
 
     val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+        override fun onCodeAutoRetrievalTimeOut(p0: String) {
+
+        }
 
         override fun onVerificationCompleted(credential: PhoneAuthCredential) {
             signInWithPhoneAuthCredential(credential)
@@ -200,7 +189,6 @@ fun SignUpScreen(
                         }
                     }
                 }) {
-
 
 
                 fun formatTime(timeRemaining: Int): String {

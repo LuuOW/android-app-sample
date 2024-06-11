@@ -1,13 +1,11 @@
 package com.lucaskempe.cropy.ui.screens.items
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.lucaskempe.cropy.viewmodels.UsersViewModel
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class GridUtil(private val vm: UsersViewModel) {
+class GridUtil {
 
 
     fun calculateDistance(index: Int, list: MutableList<ButtonData>, queue: Int = 0): IntOffset {

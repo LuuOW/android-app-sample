@@ -18,11 +18,13 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -39,11 +41,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -54,6 +58,7 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.ImageLoader
@@ -83,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(context)
+        //FirebaseApp.initializeApp(context)    
         val intent = Intent(this, AppService::class.java)
         val modifier = Modifier
 
@@ -93,10 +98,10 @@ class MainActivity : ComponentActivity() {
             val vm: UsersViewModel = hiltViewModel()
             val navController: NavHostController = rememberNavController()
 
+            startService(intent)
 
             vm.isImageSelected.apply {
                 intent.putExtra("imageUri", vm.selectedImageUri)
-                startService(intent)
             }
 
             CropyTheme {
@@ -108,6 +113,7 @@ class MainActivity : ComponentActivity() {
                     val bottomBarItems = listOf(
                         BottomBarItem.Home,
                         BottomBarItem.Inspectors,
+                        BottomBarItem.Invisible,
                         BottomBarItem.Build,
                         BottomBarItem.Chat
                     )
@@ -230,17 +236,17 @@ class MainActivity : ComponentActivity() {
                                         modifier = modifier
                                             .padding(start = 30.dp, end = 30.dp, bottom = 18.dp)
                                             .size(35.dp)
-                                            .windowInsetsPadding(WindowInsets.safeDrawing)
-                                            /*.clip(
-                                            CustomRotatingMorphShape(
-                                                morph,
-                                                animatedProgress.value,
-                                                animatedRotation.value
-                                            )
-                                        )*/
+/*                                            .clip(
+                                                CustomRotatingMorphShape(
+                                                    morph,
+                                                    animatedProgress.value,
+                                                    animatedRotation.value
+                                                )
+                                            )*/
+                                            .windowInsetsPadding(WindowInsets.displayCutout)
                                             .align(Alignment.Center)
-                                           /* .clickable {
-                                                navController.navigate("inspector_graph") {
+                                            .clickable {
+                                                navController.navigate("invisible_graph") {
                                                     popUpTo(navController.graph.findStartDestination().id) {
                                                         saveState = true
                                                         inclusive = false
@@ -248,12 +254,9 @@ class MainActivity : ComponentActivity() {
                                                     launchSingleTop = true
                                                     restoreState = true
                                                 }
-                                            }*/
+                                            }
                                     ) {
-                                        /*  drawImage(
-                                        image = imageDrawable.value.asImageBitmap()
-                                    )*/
-
+                                        //drawImage(image = imageDrawable.value.asImageBitmap())
                                         drawCircle(
                                             color = Color(70, 156, 221),
                                             radius = 35.dp.toPx()

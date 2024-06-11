@@ -4,10 +4,12 @@
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">192.168.1.2</domain>
 </domain-config>
-    <base-config>
+<!--    <base-config>
         <trust-anchors>
+&lt;!&ndash;
             <certificates src="@raw/cert.pem"/>
+&ndash;&gt;
         </trust-anchors>
-    </base-config>
+    </base-config>-->
 
 </network-security-config>

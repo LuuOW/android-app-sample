@@ -1,9 +1,16 @@
 package com.lucaskempe.cropy.providers.websocket
 
 import android.content.Context
-import androidx.hilt.navigation.compose.hiltViewModel
+import android.view.View
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.SnackbarResult
+import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.lucaskempe.cropy.R
+import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
+import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -16,44 +23,57 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 class WebSocketClient(
+    private val state: SnackbarHostState,
     private val urlString: String,
-    private val onMessageReceived: (Message) -> Unit,
-    private val onConnectionOpened: () -> Unit,
-    private val onConnectionClosed: (Int, String?) -> Unit,
-    private val onConnectionFailed: (Throwable) -> Unit,
-    private val vm : ChatViewModel
+    private val onMessageReceived: (Message) -> Unit = {},
+    private val onConnectionOpened: () -> Unit = {},
+    private val onConnectionClosed: (Int, String?) -> Unit = { _, _ -> },
+    private val onConnectionFailed: (Throwable) -> Unit = {},
+    private val vm : ChatViewModel,
+    private val view: View
 ) : WebSocketListener() {
 
     private val client = OkHttpClient()
-    private var webSocket: WebSocket? = null
+    private var webSocketCli: WebSocket? = null
     private val gson = Gson()
 
     fun connect(context: Context) {
+/*
         val trustManager = getTrustManager(context) as X509TrustManager
 
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(null, arrayOf(trustManager), null)
 
-        // Create a custom OkHttpClient with the SSL context
         val client = OkHttpClient.Builder()
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .hostnameVerifier { _, _ -> true } // Only for self-signed, unsafe in production!
             .build()
+*/
+        try {
+            val request = Request.Builder().url(urlString).build()
+            webSocketCli = client.newWebSocket(request, this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
-        val request = Request.Builder().url(urlString).build()
-        webSocket = client.newWebSocket(request, this)
     }
 
     fun disconnect() {
-        webSocket?.close(NORMAL_CLOSURE_STATUS, null)
-        webSocket = null
+        webSocketCli?.close(NORMAL_CLOSURE_STATUS, null)
+        webSocketCli = null
     }
 
-    fun sendMessage(recipientId: String, messageContent: String) {
-        val message = Message(recipientId = recipientId, messageContent = messageContent)
-        vm.messages.add(com.lucaskempe.cropy.ui.screens.Message(messageContent,isFromCurrentUser = true,recipientId ))
+    fun sendMessage(senderId: String ,recipientId: String, messageContent: String) {
+        val message = Message(senderId, recipientId = recipientId, messageContent = messageContent)
+        vm.messages.add(
+            MessageModel(
+                messageContent,
+                isFromCurrentUser = true,
+                recipientId
+            )
+        )
         val json = gson.toJson(message)
-        webSocket?.send(json)
+        webSocketCli?.send(json)
     }
 
     // WebSocketListener Overrides
@@ -65,7 +85,7 @@ class WebSocketClient(
         CoroutineScope(Dispatchers.Main).launch { // Handle UI updates on the main thread
             try {
                 val message = gson.fromJson(text, Message::class.java)
-                onMessageReceived(message)
+                vm.messages.add(MessageModel(message.messageContent, isFromCurrentUser = false, timestamp = formatTimestampToHourMinute()))
             } catch (e: Exception) {
                 println("Error parsing message: $text")
             }
@@ -79,6 +99,31 @@ class WebSocketClient(
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         onConnectionFailed(t)
+        t.printStackTrace()
+        println(response?.message)
+        CoroutineScope(Dispatchers.IO+ Job()).launch {
+            Snackbar
+                .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
+                .setAction("Retry") {
+                    val request = Request.Builder().url(urlString).build()
+                    webSocketCli = client.newWebSocket(request, this@WebSocketClient)
+                }
+                .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))
+                    .setBackgroundTint(ContextCompat.getColor(vm.context, R.color.notred))
+                    .show()
+
+/*            val result = state.showSnackbar(
+                "WSS Connection Failed",
+                "Retry",
+                SnackbarDuration.Short
+
+                if (result == SnackbarResult.ActionPerformed) {
+                val request = Request.Builder().url(urlString).build()
+                webSocketCli = client.newWebSocket(request, this@WebSocketClient)
+            }
+
+            )*/
+        }
     }
 
     companion object {
@@ -118,6 +163,7 @@ class WebSocketClient(
 
 
 data class Message(
+    val senderId: String,
     val recipientId: String,
     val messageContent: String
 ): Serializable

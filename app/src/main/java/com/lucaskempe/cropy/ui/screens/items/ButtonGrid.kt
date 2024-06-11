@@ -1,7 +1,5 @@
 package com.lucaskempe.cropy.ui.screens.items
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +21,6 @@ import com.lucaskempe.cropy.ui.screens.ButtonState
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -35,7 +32,7 @@ fun ButtonGrid(
 ) {
     //val vm: UsersViewModel = hiltViewModel()
 
-    val gu = remember { GridUtil(vm) }
+    val gu = remember { GridUtil() }
 
 
     val scope = rememberCoroutineScope()

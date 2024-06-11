@@ -1,10 +1,9 @@
 package com.lucaskempe.cropy
 
 import android.app.Application
-import android.content.Intent
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -19,6 +18,7 @@ class MainApplication: Application(), Configuration.Provider {
 
 
     override fun onCreate() {
+        FirebaseApp.initializeApp(this)
         super.onCreate()
     }
 
