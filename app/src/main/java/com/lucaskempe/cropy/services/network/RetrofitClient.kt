@@ -5,18 +5,18 @@ import com.lucaskempe.cropy.services.network.api.BgErasingAPI
 import com.lucaskempe.cropy.services.network.api.ExchangeRateAPI
 import com.lucaskempe.cropy.services.network.api.ImageUploadAPI
 import com.lucaskempe.cropy.services.network.api.LoginAPI
+import com.lucaskempe.cropy.services.network.api.SplashUIAPI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitClient {
+class RetrofitClient(private val baseURL: String) {
 
-    private const val BASE_URL = "https://api.remove.bg/"
     private val gson = GsonBuilder()
         .setLenient()
         .create()
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseURL)
             .addConverterFactory(GsonConverterFactory.create(gson)) // Use GSON for JSON conversion
             .build()
     }
@@ -24,6 +24,8 @@ object RetrofitClient {
     val imageAPI = retrofit.create(ImageUploadAPI::class.java)
 
     val loginAPI = retrofit.create(LoginAPI::class.java)
+
+    val splashAPI = retrofit.create(SplashUIAPI::class.java)
 
     val bgEraserAPI = retrofit.create(BgErasingAPI::class.java)
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -23,6 +24,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -32,6 +34,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import coil.compose.AsyncImage
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.AuthUI.IdpConfig.EmailBuilder
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -45,7 +52,13 @@ import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
+import com.lucaskempe.cropy.providers.data.SplashUIDataStore
+import com.lucaskempe.cropy.providers.data.SplashUIModel
+import com.lucaskempe.cropy.services.SplashUIWorker
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
@@ -66,6 +79,27 @@ fun SignUpScreen(
         firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
     }
 
+    var splashData by remember { mutableStateOf(SplashUIModel()) }
+
+    val workManager = WorkManager.getInstance(context)
+
+    LaunchedEffect(key1 = workManager) {
+        while (true) {
+
+            workManager.enqueueUniqueWork(
+                "one_time_work",
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequest.Builder(SplashUIWorker::class.java)
+                    .setInputData( workDataOf("id" to "666c705bb45efb24eadc999c"))
+                    .build()
+            )
+
+            val data = context.SplashUIDataStore.data.first()
+            splashData = data
+            delay(4000)
+        }
+
+    }
 
     fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
         auth.signInWithCredential(credential)
@@ -127,6 +161,11 @@ fun SignUpScreen(
         Column(
             verticalArrangement = Arrangement.Center
         ) {
+            Text(text = splashData.model_description)
+            AsyncImage(
+                modifier = Modifier.size(300.dp),
+                model = splashData.model_image,
+                contentDescription = "")
 
             val options = PhoneAuthOptions.newBuilder(auth)
                 .setTimeout(30L, TimeUnit.SECONDS) // Timeout and unit

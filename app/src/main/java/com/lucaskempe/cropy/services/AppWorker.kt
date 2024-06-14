@@ -30,7 +30,7 @@ class AppWorker @AssistedInject constructor(
 ) : Worker(context, workerParams) {
 
     private val imageUri = inputData.getString("imageUri")
-    private val retrofitClient = RetrofitClient.bgEraserAPI
+    private val retrofitClient = RetrofitClient("").bgEraserAPI
 
     private val localDataSource = LocalDataSourceImpl(context)
 

@@ -43,11 +43,11 @@ android {
 
         debug {
 
-            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
+/*            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
-            buildConfigField("String", "GL_API_KEY", glApiKey)
+            buildConfigField("String", "GL_API_KEY", glApiKey)*/
 
         }
 
@@ -58,11 +58,11 @@ android {
                 "proguard-rules.pro"
             )
 
-            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
+/*            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
-            buildConfigField("String", "GL_API_KEY", glApiKey)
+            buildConfigField("String", "GL_API_KEY", glApiKey)*/
         }
     }
     compileOptions {

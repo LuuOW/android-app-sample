@@ -1,0 +1,18 @@
+package com.lucaskempe.cropy.services.network.api
+
+import com.lucaskempe.cropy.providers.data.SplashUIModel
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface SplashUIAPI {
+
+    @Headers("Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2Nsb3VkLmdvb2dsZS5jb20vd29ya3N0YXRpb25zIiwiYXVkIjoibW9ub3NwYWNlLWNyb3B5YmFjay0xNzE1NTU5NzA5NTc4LmNsdXN0ZXItbTd0cHozYm1namdvcXJrdGx2ZDR5a3JjMm0uY2xvdWR3b3Jrc3RhdGlvbnMuZGV2IiwiaWF0IjoxNzE4MzkzMzM2LCJleHAiOjE3MTgzOTY5MzZ9.fci1kJ3znrYDlri_xsX5h6vIWsICrmZQEzmmYt6AlYnT4iNdD-WRcAMo3bKaljQ7uQLEAvjVbGyT2Cy1f_gJM0mVCTAGt2J9aFnUrsMEkQfR2EcEPUW2iHxN2H-p9Mj8urC_qLzLGXrl8yqDwk5Ev8JNcB7ZF9hars8B5b4UJDVDZW3ukBOxJQGYkOZZPqLN3sIzzKVesEQNSvDZphuYvHPYW6-N-wEWgOzQu3QY0P2ls4yT3Sy7bqYXraQoLisxrQWXzB20QBp7S0gF46HwlAoLdqys8gmei9RxoXjqAbRzZC15qdhqmb7Iw8HQIKOqyrAjX5NVsPBySi-2Mn_ZvQ")
+    @GET("/api/ui")
+    fun getSplashUI(@Query("id") id: String): Call<Array<SplashUIModel>>
+
+
+}
