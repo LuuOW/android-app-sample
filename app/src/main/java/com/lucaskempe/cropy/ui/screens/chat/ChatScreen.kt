@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.android.material.snackbar.Snackbar
+import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.providers.websocket.WebSocketClient
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
@@ -50,7 +51,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     var messageText by remember { mutableStateOf("") }
     val hostState = remember { SnackbarHostState() }
 
-    val client = WebSocketClient(state= hostState, urlString = "ws://192.168.1.2:8020/chat?userId=664e8c99a2f3854f5a62caf7", vm = vm, view = view)
+    val client = WebSocketClient(state= hostState, urlString = "wss://a474-190-229-153-212.ngrok-free.app/chat?userId=664e8c99a2f3854f5a62caf7", vm = vm, view = view)
 
     client.connect(vm.context)
 

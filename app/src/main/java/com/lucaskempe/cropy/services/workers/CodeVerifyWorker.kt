@@ -1,9 +1,12 @@
 package com.lucaskempe.cropy.services.workers
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.hilt.work.HiltWorker
+import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -19,6 +22,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -28,40 +32,45 @@ import retrofit2.Response
 class CodeVerifyWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters
-) : Worker(context, workerParams) {
+) : CoroutineWorker(context, workerParams) {
 
     private val newContext = context
     private val code = inputData.getString("code")!!
 
-    private val isValid = mutableStateOf(false)
+    private val outputData = mutableStateOf(workDataOf())
 
     companion object {
         const val baseUrl: String = BuildConfig.BASE_URL
     }
 
 
-    override fun doWork(): Result {
-        val client = RetrofitClient(
-            baseUrl)
-        val call = client.codeVerifyAPI.verifyCode(CodeVerifyRequest(code))
-        call.enqueue(object : Callback<CodeResponse> {
-            override fun onResponse(
-                p0: Call<CodeResponse>,
-                p1: Response<CodeResponse>
-            ) {
-                if (p1.isSuccessful) {
-                    Log.d("CODE_VERIFY","status: ${p1.body()?.status}")
-                    isValid.value = true
+    override suspend fun doWork(): Result {
+        try {
+            val client = RetrofitClient(
+                baseUrl)
+            val call = client.codeVerifyAPI.verifyCode(CodeVerifyRequest(code))
+            call.enqueue(object : Callback<CodeResponse> {
+                override fun onResponse(
+                    p0: Call<CodeResponse>,
+                    p1: Response<CodeResponse>
+                ) {
+                    if (p1.isSuccessful) {
+                        Log.d("CODE_VERIFY","status: ${p1.body()?.status}")
+                        outputData.value = workDataOf("isValid" to true)
+                    }
                 }
-            }
 
-            override fun onFailure(p0: Call<CodeResponse>, p1: Throwable) {
-                Log.d("Login", "${p1.message}, ${p1.cause}")
-            }
+                override fun onFailure(p0: Call<CodeResponse>, p1: Throwable) {
+                    Log.d("Login", "${p1.message}, ${p1.cause}")
+                }
 
-        })
-        val outputData = workDataOf("isValid" to isValid.value)
-        return Result.success(outputData)
+            })
+            delay(4000)
+            return Result.success(outputData.value)
+
+        } catch (e: Exception) {
+            return Result.failure()
+        }
     }
 
     data class CodeResponse(

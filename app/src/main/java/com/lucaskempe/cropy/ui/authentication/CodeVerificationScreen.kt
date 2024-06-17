@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -50,15 +53,25 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.android.material.snackbar.Snackbar
+import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.providers.data.SplashUIModel
 import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
 import com.lucaskempe.cropy.services.workers.MailRequestWorker
+import com.lucaskempe.cropy.services.workers.SignUpWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import okhttp3.Request
 
 
 @Composable
 fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) {
 
     val workManager: WorkManager = WorkManager.getInstance(vm.context)
+    val view = LocalView.current
+    val scope = rememberCoroutineScope()
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
 
@@ -114,24 +127,42 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
                 modifier = Modifier,
                 onClick = {
 
-                    if (true) {
-                        val workRequest = OneTimeWorkRequest.Builder(CodeVerifyWorker::class.java)
-                            .setInputData(workDataOf("code" to vm.code.value))
-                            .build()
-                        workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
-                        workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
+                    val workRequest = OneTimeWorkRequest.Builder(CodeVerifyWorker::class.java)
+                        .setInputData(workDataOf("code" to vm.code.value))
+                        .build()
+                    workManager.enqueueUniqueWork(
+                        "one_time",
+                        ExistingWorkPolicy.KEEP,
+                        workRequest
+                    )
+                    val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
+                    workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
+                        if (it != null && it.outputData != null) {
                             val isValid = it.outputData.getBoolean("isValid", false)
-                            if (isValid) {
+                            if (isValid && vm.repeatedPassword.value.text == "") {
                                 navController.navigate("reset")
-                            }
-                        }
-                    } else {
-                        navController.navigate("home_graph") {
-                            launchSingleTop = true
-                            restoreState = false
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                inclusive = true
-                                saveState = false
+                            } else if (isValid &&vm.emailField.value.text != "" &&
+                                vm.usernameField.value.text != "" && vm.passwordField.value.text != "" && vm.repeatedPassword.value.text != ""
+                            ) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
+                                        .setInputData(
+                                            workDataOf(
+                                                "email" to vm.emailField.value.text,
+                                                "username" to vm.usernameField.value.text,
+                                                "password" to vm.repeatedPassword.value.text,
+                                                "role" to "USER"
+                                            )
+                                        )
+                                        .build()
+                                    workManager.enqueueUniqueWork(
+                                        "one_time",
+                                        ExistingWorkPolicy.KEEP,
+                                        work
+                                    )
+                                    delay(2000)
+                                    login(workManager,navController,vm)
+                                }
                             }
                         }
                     }
@@ -205,8 +236,6 @@ fun VerificationCodeField(
         }
     }
 }
-
-
 
 
 class MaskTransformation(val mask: CharArray) : VisualTransformation {

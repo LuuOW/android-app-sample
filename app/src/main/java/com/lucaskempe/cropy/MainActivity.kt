@@ -30,15 +30,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +59,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -65,10 +77,12 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.AppService
 import com.lucaskempe.cropy.ui.cards.ButtonSlider
 import com.lucaskempe.cropy.ui.navigation.BottomBar
 import com.lucaskempe.cropy.ui.navigation.BottomBarItem
+import com.lucaskempe.cropy.ui.navigation.DrawerRoutes
 import com.lucaskempe.cropy.ui.navigation.NavGraph
 import com.lucaskempe.cropy.ui.theme.CropyTheme
 import com.lucaskempe.cropy.ui.views.CustomDrawer
@@ -76,6 +90,10 @@ import com.lucaskempe.cropy.ui.views.CustomSearch
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ExperimentalMaterial3Api
@@ -93,6 +111,15 @@ class MainActivity : ComponentActivity() {
         val modifier = Modifier
 
         installSplashScreen()
+
+        val session = mutableStateOf(false)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val loginData = context.UserSessionDataStore.data.first()
+            if (loginData.token != "") {
+                session.value = true
+            }
+        }
 
         setContent {
             val vm: UsersViewModel = hiltViewModel()
@@ -124,13 +151,14 @@ class MainActivity : ComponentActivity() {
                     )
                     val showTopBar = remember { mutableStateOf(false) }
                     val showBottomBar = remember { mutableStateOf(false) }
-                    val auth = FirebaseAuth.getInstance()
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-                    LaunchedEffect(navController) {
+                    LaunchedEffect(navController, context) {
+
                         navController.currentBackStackEntryFlow.collect { backStackEntry ->
                             val currentRoute = backStackEntry.destination.route
-                            val currentGraphId = backStackEntry.destination.parent?.route ?: backStackEntry.destination.id // Get parent graph ID or destination ID if no parent
+                            val currentGraphId = backStackEntry.destination.parent?.route
+                                ?: backStackEntry.destination.id // Get parent graph ID or destination ID if no parent
                             if (currentGraphId != "auth_graph") {
                                 showTopBar.value = currentRoute in searchBarRoutes
                                 showBottomBar.value = true
@@ -138,147 +166,156 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    Scaffold(
-                        modifier = modifier,
-                        drawerContent = {
-                            CustomDrawer(
-                                modifier = modifier,
-                                drawerState = drawerState,
-                                auth=auth
-                            )
-                        },
-                        topBar = {
-                            if (showTopBar.value) {
-                                Column {
-                                    CustomSearch(vm = vm)
-                                    ButtonSlider()
-                                }
-                            }
-                        },
-                        bottomBar = {
-
-                            if (showBottomBar.value) {
-                                Box(
-                                ) {
-                                    BottomBar(
-                                        context = context,
-                                        navController = navController,
-                                        items = bottomBarItems,
-                                        modifier = modifier
-                                    )
-
-
-                                    val shapeA = remember {
-                                        RoundedPolygon(
-                                            12,
-                                            rounding = CornerRounding(0.2f)
-                                        )
-                                    }
-                                    val shapeB = remember {
-                                        RoundedPolygon.star(
-                                            12,
-                                            rounding = CornerRounding(0.2f)
-                                        )
-                                    }
-                                    val morph = remember {
-                                        Morph(shapeA, shapeB)
-                                    }
-                                    val infiniteTransition =
-                                        rememberInfiniteTransition("infinite outline movement")
-                                    val animatedProgress = infiniteTransition.animateFloat(
-                                        initialValue = 0f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            tween(5000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "animatedMorphProgress"
-                                    )
-                                    val animatedRotation = infiniteTransition.animateFloat(
-                                        initialValue = 0f,
-                                        targetValue = 360f,
-                                        animationSpec = infiniteRepeatable(
-                                            tween(6000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "animatedMorphProgress"
-                                    )
-
-                                    val imageDrawable: MutableState<Bitmap> = remember {
-                                        mutableStateOf(
-                                            Bitmap.createBitmap(
-                                                1,
-                                                1,
-                                                Bitmap.Config.ARGB_8888
-                                            )
-                                        )
-                                    }
-
-                                    val imageLoader =
-                                        ImageLoader(context = context).newBuilder().build()
-                                    val request = ImageRequest.Builder(context = context)
-                                        .data("https://i.pinimg.com/474x/80/b8/93/80b893e3c9fbbc26d89f0c275f0967e7.jpg")
-                                        .crossfade(true)
-                                        .build()
-
-                                    LaunchedEffect(
-                                        key1 = context,
-                                    ) {
-                                        val result = imageLoader.execute(request).drawable
-                                        imageDrawable.value = Bitmap.createScaledBitmap(
-                                            (result as BitmapDrawable).bitmap,
-                                            300,
-                                            300,
-                                            false
-                                        )
-                                    }
-
-                                    Canvas(
-                                        modifier = modifier
-                                            .padding(start = 30.dp, end = 30.dp, bottom = 18.dp)
-                                            .size(35.dp)
-/*                                            .clip(
-                                                CustomRotatingMorphShape(
-                                                    morph,
-                                                    animatedProgress.value,
-                                                    animatedRotation.value
-                                                )
-                                            )*/
-                                            .windowInsetsPadding(WindowInsets.displayCutout)
-                                            .align(Alignment.Center)
-                                            .clickable {
-                                                navController.navigate("invisible_graph") {
-                                                    popUpTo(navController.graph.findStartDestination().id) {
-                                                        saveState = true
-                                                        inclusive = false
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                    ) {
-                                        //drawImage(image = imageDrawable.value.asImageBitmap())
-                                        drawCircle(
-                                            color = Color(70, 156, 221),
-                                            radius = 35.dp.toPx()
-                                        )
-                                    }
-                                }
-                            }
-
-                        }
-                    ) { innerPadding ->
-                        NavGraph(
-                            activity = this,
-                            padding = innerPadding,
-                            modifier = Modifier
-                                .padding(innerPadding),
+                    ModalNavigationDrawer(
+                        drawerState = drawerState,
+                        drawerContent = { CustomDrawer(
+                            modifier = modifier,
+                            drawerState = drawerState,
+                            context = context,
                             navController = navController,
-                            context = this,
-                            auth = auth
-                        )
-                    }
+                            showTopBar = showTopBar,
+                            showBottomBar = showBottomBar
+                        ) },
+                        content = {
+                            Scaffold(
+                                modifier = modifier,
+                                topBar = {
+                                    if (showTopBar.value) {
+                                        Column {
+                                            CustomSearch(vm = vm, drawerState)
+                                            ButtonSlider()
+                                        }
+                                    }
+                                },
+                                bottomBar = {
 
+                                    if (showBottomBar.value) {
+                                        Box(
+                                        ) {
+                                            BottomBar(
+                                                context = context,
+                                                navController = navController,
+                                                items = bottomBarItems,
+                                                modifier = modifier
+                                            )
+
+
+                                            val shapeA = remember {
+                                                RoundedPolygon(
+                                                    12,
+                                                    rounding = CornerRounding(0.2f)
+                                                )
+                                            }
+                                            val shapeB = remember {
+                                                RoundedPolygon.star(
+                                                    12,
+                                                    rounding = CornerRounding(0.2f)
+                                                )
+                                            }
+                                            val morph = remember {
+                                                Morph(shapeA, shapeB)
+                                            }
+                                            val infiniteTransition =
+                                                rememberInfiniteTransition("infinite outline movement")
+                                            val animatedProgress = infiniteTransition.animateFloat(
+                                                initialValue = 0f,
+                                                targetValue = 1f,
+                                                animationSpec = infiniteRepeatable(
+                                                    tween(5000, easing = LinearEasing),
+                                                    repeatMode = RepeatMode.Reverse
+                                                ),
+                                                label = "animatedMorphProgress"
+                                            )
+                                            val animatedRotation = infiniteTransition.animateFloat(
+                                                initialValue = 0f,
+                                                targetValue = 360f,
+                                                animationSpec = infiniteRepeatable(
+                                                    tween(6000, easing = LinearEasing),
+                                                    repeatMode = RepeatMode.Reverse
+                                                ),
+                                                label = "animatedMorphProgress"
+                                            )
+
+                                            val imageDrawable: MutableState<Bitmap> = remember {
+                                                mutableStateOf(
+                                                    Bitmap.createBitmap(
+                                                        1,
+                                                        1,
+                                                        Bitmap.Config.ARGB_8888
+                                                    )
+                                                )
+                                            }
+
+                                            val imageLoader =
+                                                ImageLoader(context = context).newBuilder().build()
+                                            val request = ImageRequest.Builder(context = context)
+                                                .data("https://i.pinimg.com/474x/80/b8/93/80b893e3c9fbbc26d89f0c275f0967e7.jpg")
+                                                .crossfade(true)
+                                                .build()
+
+                                            LaunchedEffect(
+                                                key1 = context,
+                                            ) {
+                                                val result = imageLoader.execute(request).drawable
+                                                imageDrawable.value = Bitmap.createScaledBitmap(
+                                                    (result as BitmapDrawable).bitmap,
+                                                    300,
+                                                    300,
+                                                    false
+                                                )
+                                            }
+
+                                            Canvas(
+                                                modifier = modifier
+                                                    .padding(
+                                                        start = 30.dp,
+                                                        end = 30.dp,
+                                                        bottom = 18.dp
+                                                    )
+                                                    .size(35.dp)
+                                                    /*                                            .clip(
+                                                        CustomRotatingMorphShape(
+                                                            morph,
+                                                            animatedProgress.value,
+                                                            animatedRotation.value
+                                                        )
+                                                    )*/
+                                                    .windowInsetsPadding(WindowInsets.displayCutout)
+                                                    .align(Alignment.Center)
+                                                    .clickable {
+                                                        navController.navigate("invisible_graph") {
+                                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                                saveState = true
+                                                                inclusive = false
+                                                            }
+                                                            launchSingleTop = true
+                                                            restoreState = true
+                                                        }
+                                                    }
+                                            ) {
+                                                //drawImage(image = imageDrawable.value.asImageBitmap())
+                                                drawCircle(
+                                                    color = Color(70, 156, 221),
+                                                    radius = 35.dp.toPx()
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                }
+                            ) { innerPadding ->
+                                NavGraph(
+                                    activity = this,
+                                    padding = innerPadding,
+                                    modifier = Modifier
+                                        .padding(innerPadding),
+                                    navController = navController,
+                                    context = this,
+                                    session = session.value
+                                )
+                            }
+                        }
+                    )
                 }
 
             }

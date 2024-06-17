@@ -7,9 +7,12 @@ import com.lucaskempe.cropy.services.network.api.ExchangeRateAPI
 import com.lucaskempe.cropy.services.network.api.ImageUploadAPI
 import com.lucaskempe.cropy.services.network.api.LoginAPI
 import com.lucaskempe.cropy.services.network.api.MailRequestAPI
+import com.lucaskempe.cropy.services.network.api.PasswordResetAPI
+import com.lucaskempe.cropy.services.network.api.SignUpAPI
 import com.lucaskempe.cropy.services.network.api.SplashUIAPI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 class RetrofitClient(private val baseURL: String) {
 
@@ -26,6 +29,8 @@ class RetrofitClient(private val baseURL: String) {
     val imageAPI = retrofit.create(ImageUploadAPI::class.java)
 
     val mailRequestAPI = retrofit.create(MailRequestAPI::class.java)
+    val passwordResetAPI = retrofit.create(PasswordResetAPI::class.java)
+    val signupAPI = retrofit.create(SignUpAPI::class.java)
 
     val codeVerifyAPI = retrofit.create(CodeVerifyAPI::class.java)
 

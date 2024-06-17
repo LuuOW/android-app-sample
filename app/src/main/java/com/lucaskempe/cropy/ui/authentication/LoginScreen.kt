@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +59,13 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.lucaskempe.cropy.providers.data.SplashUIModel
+import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.workers.LoginWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.math.log
 
 
@@ -71,6 +78,7 @@ fun LoginScreen(
     val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
+    val scope = rememberCoroutineScope()
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -172,7 +180,7 @@ fun ForgotPasswordLabel(onClick: () -> Unit) {
     )
 }
 
-private fun login(
+fun login(
     workManager: WorkManager,
     navController: NavHostController,
     vm: AuthViewmodel
@@ -180,22 +188,24 @@ private fun login(
     val workRequest = OneTimeWorkRequest.Builder(LoginWorker::class.java)
         .setInputData(workDataOf("username" to vm.usernameField.value.text, "password" to vm.loginPasswordField.value.text))
         .build()
-
     workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
-
     workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
-            workInfo ->
-        if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-            navController.navigate("home_graph") {
-                launchSingleTop = true
-                restoreState = false
-                popUpTo(navController.graph.findStartDestination().id) {
-                    inclusive = true
-                    saveState = false
+        if (it != null) {
+            val token = it.outputData.getString("token")
+            if (token != "" && token != null) {
+                navController.navigate("home_graph") {
+                    launchSingleTop = true
+                    restoreState = false
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                        saveState = false
+                    }
                 }
             }
         }
     }
+
+
 }
 
 

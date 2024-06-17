@@ -60,7 +60,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.lucaskempe.cropy.providers.data.SplashUIModel
+import com.lucaskempe.cropy.services.workers.MailRequestWorker
+import com.lucaskempe.cropy.services.workers.SignUpWorker
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.face
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.freckle1
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.freckle2
@@ -90,6 +96,7 @@ fun SignUpScreen(
 ) {
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
+    val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -141,21 +148,21 @@ fun SignUpScreen(
 
         OutlinedTextField(
             value = vm.emailField.value,
-            onValueChange = { vm.passwordField.value = it },
+            onValueChange = { vm.emailField.value = it },
             label = { Text("Email: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         )
         OutlinedTextField(
             value = vm.phoneNumberField.value,
-            onValueChange = { vm.passwordField.value = it },
+            onValueChange = { vm.phoneNumberField.value = it },
             label = { Text("Phone number: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         )
         OutlinedTextField(
             value = vm.usernameField.value,
-            onValueChange = { vm.passwordField.value= it },
+            onValueChange = { vm.usernameField.value= it },
             label = { Text("Username: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -176,7 +183,15 @@ fun SignUpScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    navController.navigate("verification")
+                    val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
+                    if (vm.emailField.value.text != "" &&
+                        vm.usernameField.value.text != "" && vm.passwordField.value.text != "" && vm.repeatedPassword.value.text != "") {
+                        val workRequest = OneTimeWorkRequest.Builder(MailRequestWorker::class.java)
+                            .setInputData(workDataOf("email" to vm.emailField.value.text))
+                            .build()
+                        workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
+                        navController.navigate("verification")
+                    }
                 }) {
                 Text(
                     text = splashData.model_button_title,

@@ -30,7 +30,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.lucaskempe.cropy.providers.data.SplashUIModel
+import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
+import com.lucaskempe.cropy.services.workers.PasswordResetWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ResetPasswordScreen(
@@ -39,6 +49,7 @@ fun ResetPasswordScreen(
 ) {
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
+    val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -90,16 +101,20 @@ fun ResetPasswordScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    if (true) {
-                        navController.navigate("login") {
-                            launchSingleTop = true
-                            restoreState = false
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                inclusive = true
-                                saveState = false
-                            }
+
+                    val workRequest = OneTimeWorkRequest.Builder(PasswordResetWorker::class.java)
+                        .setInputData(workDataOf("password" to vm.passwordField.value.text, "email" to vm.emailField.value.text))
+                        .build()
+                    workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
+                    navController.navigate("login") {
+                        launchSingleTop = true
+                        restoreState = false
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                            saveState = false
                         }
                     }
+
                 }) {
                 Text(
                     text = splashData.model_button_title,

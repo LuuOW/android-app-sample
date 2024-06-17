@@ -8,6 +8,7 @@ import androidx.compose.material.SnackbarResult
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
+import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
@@ -38,19 +39,11 @@ class WebSocketClient(
     private val gson = Gson()
 
     fun connect(context: Context) {
-/*
-        val trustManager = getTrustManager(context) as X509TrustManager
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, arrayOf(trustManager), null)
-
-        val client = OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustManager)
-            .hostnameVerifier { _, _ -> true } // Only for self-signed, unsafe in production!
-            .build()
-*/
         try {
-            val request = Request.Builder().url(urlString).build()
+            val wss = BuildConfig.WSS_BASE_URL
+            val request = Request.Builder()
+                .addHeader("Authorization", "Bearer ")
+                .url("$wss/chat?userId=664e8c99a2f3854f5a62caf7").build()
             webSocketCli = client.newWebSocket(request, this)
         } catch (e: Exception) {
             e.printStackTrace()

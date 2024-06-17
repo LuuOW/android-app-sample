@@ -31,10 +31,10 @@ fun NavGraph(
     navController: NavHostController,
     modifier: Modifier,
     context: Context,
-    auth: FirebaseAuth,
+    session: Boolean,
     padding: PaddingValues
 ) {
-    DestinationGraph(activity,modifier,context,auth,navController, padding)
+    DestinationGraph(activity,modifier,context, session =session ,navController, padding)
 
 
  /*   NavHost(

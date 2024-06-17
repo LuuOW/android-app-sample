@@ -11,12 +11,12 @@ import com.google.firebase.auth.FirebaseAuth
 fun DestinationHolder(
     destinationSet: MutableSet<DestinationObject>,
     navController: NavHostController,
-    auth: FirebaseAuth
+    session: Boolean
 ) {
 
     NavHost(
         navController = navController,
-        startDestination = if(auth.currentUser != null) "home_graph" else "auth_graph",
+        startDestination = if(session) "home_graph" else "auth_graph",
     ) {
         destinationSet.forEach { graph ->
             navigation(

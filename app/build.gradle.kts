@@ -57,8 +57,17 @@ android {
 
         debug {
 
-            val apiKey: String? = getLocalProperty("API_KEY", project)
-            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+/*            val apiKey: String = gradleLocalProperties(rootDir, providers).getProperty("API_KEY")
+            require(apiKey.isNotEmpty()) {
+                "is not set in local.properties"
+            }
+            buildConfigField("String", "API_KEY", apiKey)*/
+
+            val wssBaseUrl: String = gradleLocalProperties(rootDir, providers).getProperty("WSS_BASE_URL")
+            require(wssBaseUrl.isNotEmpty()) {
+                "is not set in local.properties"
+            }
+            buildConfigField("String", "WSS_BASE_URL", wssBaseUrl)
 
             val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
@@ -81,11 +90,30 @@ android {
                 "proguard-rules.pro"
             )
 
+            val wssBaseUrl: String = gradleLocalProperties(rootDir, providers).getProperty("WSS_BASE_URL")
+            require(wssBaseUrl.isNotEmpty()) {
+                "is not set in local.properties"
+            }
+            buildConfigField("String", "WSS_BASE_URL", wssBaseUrl)
+
             val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
-                "glApiKey is not set in local.properties"
+                "is not set in local.properties"
             }
             buildConfigField("String", "GL_API_KEY", glApiKey)
+
+            val baseUrl: String = gradleLocalProperties(rootDir, providers).getProperty("BASE_URL")
+            require(baseUrl.isNotEmpty()) {
+                "is not set in local.properties"
+            }
+            buildConfigField("String", "BASE_URL", baseUrl)
+
+/*            val apiKey: String = gradleLocalProperties(rootDir, providers).getProperty("API_KEY")
+            require(baseUrl.isNotEmpty()) {
+                "not set in local.properties"
+            }
+            buildConfigField("String", "API_KEY", apiKey)*/
+
         }
     }
     compileOptions {

@@ -59,7 +59,7 @@ fun DestinationGraph(
     activity: Activity,
     modifier: Modifier,
     context: Context,
-    auth: FirebaseAuth,
+    session: Boolean,
     navController: NavHostController,
     padding: PaddingValues
 ) {
@@ -137,7 +137,7 @@ fun DestinationGraph(
         )
     )
 
-    DestinationHolder(nvm.destSet, navController, auth)
+    DestinationHolder(nvm.destSet, navController, session)
 
 }
 

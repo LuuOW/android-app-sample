@@ -2,6 +2,7 @@ package com.lucaskempe.cropy.ui.views
 
 
 import android.Manifest
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +28,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,20 +36,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.datastore.dataStoreFile
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
+import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.ui.navigation.DrawerRoutes
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.launch
 
 @Composable
 fun CustomDrawer(
     modifier: Modifier,
     drawerState: DrawerState,
-    auth: FirebaseAuth
+    context: Context,
+    navController: NavController,
+    showTopBar: MutableState<Boolean>,
+    showBottomBar: MutableState<Boolean>
 ) {
-
-    val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
         onResult = {
@@ -56,50 +68,55 @@ fun CustomDrawer(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
     )
 
-// icons to mimic drawer destinations
-    val items = listOf(
-        Icons.Filled.Settings,
-        Icons.Filled.Info
-    )
-
     val mItems = listOf(
         DrawerRoutes.Account,
         DrawerRoutes.Settings,
         DrawerRoutes.Info,
+        DrawerRoutes.LogOut
     )
-
+    val scope = rememberCoroutineScope()
     val selectedItem = remember { mutableStateOf<ImageVector?>(null) }
 
+
+    ModalDrawerSheet{
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            mItems.forEach { item ->
+                NavigationDrawerItem(
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.route
+                        )
+                    },
+                    label = { Text(item.title) },
+                    selected = item.icon == selectedItem.value,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            selectedItem.value = null
+                        }
+                        selectedItem.value = item.icon
+
+                        if (item.route == "logout") {
+                            context.dataStoreFile("sessions.pb").delete()
+                            showTopBar.value = false
+                            showBottomBar.value = false
+                            navController.navigate("auth_graph")
+                        }
+
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
+        }
+    }
+/*
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet() {
-                Column(
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    mItems.forEach { item ->
-                        NavigationDrawerItem(
-                            icon = {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.route
-                                )
-                            },
-                            label = { Text(item.title) },
-                            selected = item.icon == selectedItem.value,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.close()
-                                    selectedItem.value = null
-                                }
-                                selectedItem.value = item.icon
-                            },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
-                    }
-                }
-            }
             LaunchedEffect(Unit) {
                 drawerState.open().apply {
                     tween<Unit>(durationMillis = 500)
@@ -119,23 +136,23 @@ fun CustomDrawer(
             ) {
                 Column {
                     if (selectedItem.value == Icons.Filled.AccountBox) {
-                        val user = auth.currentUser
+                        //val user = auth.currentUser
                         AsyncImage(
-                            model = user?.photoUrl,
+                            model = "",
                             contentDescription = "User Photo",
                             modifier = modifier.clip(CircleShape))
 
-                        Text(text = "Welcome ${user?.displayName}")
+                        Text(text = "Welcome Name")
                     }
-                    val user = auth.currentUser
+                    //val user = auth.currentUser
                     AsyncImage(
-                        model = user?.photoUrl,
+                        model = "",
                         contentDescription = "User Photo",
                         modifier = modifier
                             .size(200.dp)
                             .clip(CircleShape))
 
-                    Text(text = "Welcome ${user?.displayName}")
+                    Text(text = "Welcome ")
                     Button(onClick = {
                         scope.launch {
                             if (drawerState.isOpen) drawerState.close() else drawerState.open()
@@ -155,5 +172,5 @@ fun CustomDrawer(
             }
 
         }
-    )
+    )*/
 }
