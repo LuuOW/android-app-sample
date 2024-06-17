@@ -35,11 +35,11 @@ val Context.SplashUIDataStore: DataStore<SplashUIModel> by dataStore(
 )
 
 data class SplashUIModel(
-    var model_title: String = "signup.title",
-    var model_description: String = "signup.description",
+    var model_title: String = "welcome.title",
+    var model_description: String = "welcome.description",
     var model_image: String = "",
-    var model_button_title: String = "signup.button.title",
+    var model_button_title: String = "welcome.button.title",
     var model_button_action: String = "",
-    var model_primary_color: String = "",
-    var model_secondary_color: String = "",
+    var model_primary_color: Long = 0xFF2be4dc,
+    var model_secondary_color: Long = 0xFF243484,
 )

@@ -1,4 +1,4 @@
-package com.lucaskempe.cropy.services
+package com.lucaskempe.cropy.services.workers
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -30,7 +30,6 @@ class AppWorker @AssistedInject constructor(
 ) : Worker(context, workerParams) {
 
     private val imageUri = inputData.getString("imageUri")
-    private val retrofitClient = RetrofitClient("").bgEraserAPI
 
     private val localDataSource = LocalDataSourceImpl(context)
 
@@ -71,11 +70,7 @@ class AppWorker @AssistedInject constructor(
             val sizePart = "auto".toRequestBody("text/plain".toMediaTypeOrNull())
 
             CoroutineScope(Dispatchers.IO + Job()).launch {
-                try {
-                    val result = retrofitClient.removeBackground(imageFilePart,sizePart)
-                } catch (e: Exception) {
-                    throw Exception("Error uploading image, cause: ${e.message}, ${e.cause}")
-                }
+
             }
 
         }

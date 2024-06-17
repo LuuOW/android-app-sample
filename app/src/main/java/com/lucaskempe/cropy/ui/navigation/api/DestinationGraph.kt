@@ -37,7 +37,13 @@ import androidx.compose.ui.unit.round
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
+import com.lucaskempe.cropy.ui.authentication.AuthViewmodel
+import com.lucaskempe.cropy.ui.authentication.LoginScreen
+import com.lucaskempe.cropy.ui.authentication.CodeVerificationScreen
+import com.lucaskempe.cropy.ui.authentication.MailRequestScreen
+import com.lucaskempe.cropy.ui.authentication.ResetPasswordScreen
 import com.lucaskempe.cropy.ui.authentication.SignUpScreen
+import com.lucaskempe.cropy.ui.authentication.WelcomeScreen
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
 import com.lucaskempe.cropy.ui.screens.BuildScreen
@@ -62,13 +68,20 @@ fun DestinationGraph(
 
     val vm: UsersViewModel = hiltViewModel()
 
+    val authVm: AuthViewmodel = hiltViewModel()
+
     val router: RouterDestinity = RouterImplementation(nvm.destSet)
 
     router.createGraph(
         "auth_graph",
-        "sign_up",
+        "welcome",
         mutableMapOf(
-            "sign_up" to { SignUpScreen(context, activity, navController) },
+            "welcome" to { WelcomeScreen(navController) },
+            "login" to { LoginScreen(navController, vm = authVm) },
+            "sign_up" to { SignUpScreen(context, activity, navController, vm=authVm) },
+            "verification" to { CodeVerificationScreen(navController, authVm) },
+            "reset" to { ResetPasswordScreen(navController,authVm) },
+            "mail_request" to { MailRequestScreen(navController = navController, vm = authVm) }
         )
     )
     router.createGraph(

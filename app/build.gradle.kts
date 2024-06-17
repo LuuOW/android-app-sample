@@ -1,5 +1,6 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -9,6 +10,19 @@ plugins {
     alias(libs.plugins.mapSecrets)
     id("com.google.gms.google-services")
     id("com.google.dagger.hilt.android")
+}
+
+
+fun getLocalProperty(propertyName: String, project: Project): String? {
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        val properties = Properties()
+        properties.load(localPropertiesFile.inputStream())
+        return properties.getProperty(propertyName)
+    } else {
+        println("local.properties file not found")
+        return null
+    }
 }
 
 
@@ -43,11 +57,20 @@ android {
 
         debug {
 
-/*            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
+            val apiKey: String? = getLocalProperty("API_KEY", project)
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
-            buildConfigField("String", "GL_API_KEY", glApiKey)*/
+            buildConfigField("String", "GL_API_KEY", glApiKey)
+
+            val baseUrl: String = gradleLocalProperties(rootDir, providers).getProperty("BASE_URL")
+            require(baseUrl.isNotEmpty()) {
+                "glApiKey is not set in local.properties"
+            }
+            buildConfigField("String", "BASE_URL", baseUrl)
 
         }
 
@@ -58,11 +81,11 @@ android {
                 "proguard-rules.pro"
             )
 
-/*            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
+            val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"
             }
-            buildConfigField("String", "GL_API_KEY", glApiKey)*/
+            buildConfigField("String", "GL_API_KEY", glApiKey)
         }
     }
     compileOptions {

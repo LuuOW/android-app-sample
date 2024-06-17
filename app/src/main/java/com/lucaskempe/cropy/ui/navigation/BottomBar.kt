@@ -51,6 +51,7 @@ fun BottomBar(
     modifier: Modifier
 ) {
     BottomNavigation(
+
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination

@@ -1,4 +1,4 @@
-package com.lucaskempe.cropy.services
+package com.lucaskempe.cropy.services.workers
 
 import android.content.Context
 import android.util.Log
@@ -12,7 +12,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback

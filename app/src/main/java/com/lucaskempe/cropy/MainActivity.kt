@@ -130,7 +130,8 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(navController) {
                         navController.currentBackStackEntryFlow.collect { backStackEntry ->
                             val currentRoute = backStackEntry.destination.route
-                            if (auth.currentUser != null) {
+                            val currentGraphId = backStackEntry.destination.parent?.route ?: backStackEntry.destination.id // Get parent graph ID or destination ID if no parent
+                            if (currentGraphId != "auth_graph") {
                                 showTopBar.value = currentRoute in searchBarRoutes
                                 showBottomBar.value = true
                             }

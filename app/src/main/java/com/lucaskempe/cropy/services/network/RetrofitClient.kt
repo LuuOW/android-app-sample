@@ -2,9 +2,11 @@ package com.lucaskempe.cropy.services.network
 
 import com.google.gson.GsonBuilder
 import com.lucaskempe.cropy.services.network.api.BgErasingAPI
+import com.lucaskempe.cropy.services.network.api.CodeVerifyAPI
 import com.lucaskempe.cropy.services.network.api.ExchangeRateAPI
 import com.lucaskempe.cropy.services.network.api.ImageUploadAPI
 import com.lucaskempe.cropy.services.network.api.LoginAPI
+import com.lucaskempe.cropy.services.network.api.MailRequestAPI
 import com.lucaskempe.cropy.services.network.api.SplashUIAPI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -23,18 +25,13 @@ class RetrofitClient(private val baseURL: String) {
 
     val imageAPI = retrofit.create(ImageUploadAPI::class.java)
 
+    val mailRequestAPI = retrofit.create(MailRequestAPI::class.java)
+
+    val codeVerifyAPI = retrofit.create(CodeVerifyAPI::class.java)
+
     val loginAPI = retrofit.create(LoginAPI::class.java)
 
     val splashAPI = retrofit.create(SplashUIAPI::class.java)
 
-    val bgEraserAPI = retrofit.create(BgErasingAPI::class.java)
-
-    fun getExchangeRateApi(): ExchangeRateAPI {
-        return if (retrofit != null) {
-            retrofit.create(ExchangeRateAPI::class.java)
-        } else {
-            throw IllegalStateException("Retrofit not initialized")
-        }
-    }
 
 }
