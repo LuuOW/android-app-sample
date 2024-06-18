@@ -67,7 +67,7 @@ class CodeVerifyWorker @AssistedInject constructor(
                 }
 
             })
-            delay(4000)
+            delay(2000)
             return Result.success(outputData.value)
 
         } catch (e: Exception) {

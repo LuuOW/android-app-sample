@@ -127,9 +127,6 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
                 modifier = Modifier,
                 onClick = {
 
-                    val navigateSignUp = true
-                    val navigateReset = false
-
                     val workRequest = OneTimeWorkRequest.Builder(CodeVerifyWorker::class.java)
                         .setInputData(workDataOf("code" to vm.code.value, "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value)))
                         .build()
@@ -140,12 +137,14 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
                     )
 
                     workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
-                        val isValid = it.outputData.getBoolean("isValid", false)
+                        if (it != null) {
+                            val isValid = it.outputData.getBoolean("isValid", false)
 
-                        if (navigateReset && isValid) {
-                            navController.navigate("reset")
-                        } else if (navigateSignUp && isValid) {
-                            navController.navigate("sign_up")
+                            if (vm.routeIsReset.value && isValid) {
+                                navController.navigate("reset")
+                            } else if (!vm.routeIsReset.value && isValid) {
+                                navController.navigate("sign_up")
+                            }
                         }
                     }
 

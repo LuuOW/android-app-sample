@@ -100,7 +100,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 onMessageTextChanged = { messageText = it },
                 onSendMessage = { message ->
                     messageText = ""
-                    client.sendMessage("664e8c99a2f3854f5a62caf7", "664f6018ec667b41baa87f42", message)
+                    client.sendMessage("6671ed4dd0a71a1a0aea6d68", "6670b2a9cacd892d4c9051be", message)
                 }
             )
         }

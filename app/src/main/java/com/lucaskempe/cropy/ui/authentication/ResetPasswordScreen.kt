@@ -103,7 +103,7 @@ fun ResetPasswordScreen(
                 onClick = {
 
                     val workRequest = OneTimeWorkRequest.Builder(PasswordResetWorker::class.java)
-                        .setInputData(workDataOf("password" to vm.passwordField.value.text, "email" to vm.emailField.value.text))
+                        .setInputData(workDataOf("password" to vm.passwordField.value.text, "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value)))
                         .build()
                     workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
                     navController.navigate("login") {

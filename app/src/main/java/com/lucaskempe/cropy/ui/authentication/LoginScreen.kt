@@ -164,6 +164,7 @@ fun LoginScreen(
         }
 
         ForgotPasswordLabel {
+            vm.routeIsReset.value = true
             navController.navigate("sms_request")
         }
     }
@@ -189,19 +190,13 @@ fun login(
         .setInputData(workDataOf("username" to vm.usernameField.value.text, "password" to vm.loginPasswordField.value.text))
         .build()
     workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
-    workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
-        if (it != null) {
-            val token = it.outputData.getString("token")
-            if (token != "" && token != null) {
-                navController.navigate("home_graph") {
-                    launchSingleTop = true
-                    restoreState = false
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        inclusive = true
-                        saveState = false
-                    }
-                }
-            }
+
+    navController.navigate("home_graph") {
+        launchSingleTop = true
+        restoreState = false
+        popUpTo(navController.graph.findStartDestination().id) {
+            inclusive = true
+            saveState = false
         }
     }
 

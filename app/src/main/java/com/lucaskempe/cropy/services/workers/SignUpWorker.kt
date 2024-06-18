@@ -27,13 +27,14 @@ class SignUpWorker @AssistedInject constructor(
 
     private val username = inputData.getString("username")!!
     private val email = inputData.getString("email")!!
+    private val phone = inputData.getString("phone")!!
     private val password = inputData.getString("password")!!
     private val role = inputData.getString("role")!!
 
     override suspend fun doWork(): Result {
         try {
             val client = RetrofitClient(baseUrl, newContext).signupAPI
-            val call = client.signUp(SignUpRequest(username,email, password, role))
+            val call = client.signUp(SignUpRequest(username,email,phone, password, role))
             call.enqueue(object : Callback<SignUpResponse> {
                 override fun onResponse(p0: Call<SignUpResponse>, p1: Response<SignUpResponse>) {
                     Log.d("SIGN_UP", "Success")

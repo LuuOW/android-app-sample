@@ -89,6 +89,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 @Composable
@@ -181,22 +182,23 @@ fun SignUpScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
-                            .setInputData(
-                                workDataOf(
-                                    "email" to vm.emailField.value.text,
-                                    "username" to vm.usernameField.value.text,
-                                    "password" to vm.repeatedPassword.value.text,
-                                    "role" to "USER"
-                                )
+                    val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
+                        .setInputData(
+                            workDataOf(
+                                "email" to vm.emailField.value.text,
+                                "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value),
+                                "username" to vm.usernameField.value.text,
+                                "password" to vm.repeatedPassword.value.text,
+                                "role" to "USER"
                             )
-                            .build()
-                        workManager.enqueueUniqueWork(
-                            "one_time",
-                            ExistingWorkPolicy.KEEP,
-                            work
                         )
+                        .build()
+                    workManager.enqueueUniqueWork(
+                        "one_time",
+                        ExistingWorkPolicy.KEEP,
+                        work
+                    )
+                    runBlocking {
                         delay(2000)
                         login(workManager,navController,vm)
                     }
