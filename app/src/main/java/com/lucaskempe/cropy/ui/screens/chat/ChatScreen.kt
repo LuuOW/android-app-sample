@@ -32,6 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.android.material.snackbar.Snackbar
 import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.providers.websocket.WebSocketClient
@@ -39,6 +43,8 @@ import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
 import com.lucaskempe.cropy.R
+import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
+import com.lucaskempe.cropy.services.workers.ImageUploadWorker
 import kotlinx.coroutines.launch
 
 
@@ -50,6 +56,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     val view = LocalView.current
     var messageText by remember { mutableStateOf("") }
     val hostState = remember { SnackbarHostState() }
+    val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
     val client = WebSocketClient(state= hostState, urlString = "wss://a474-190-229-153-212.ngrok-free.app/chat?userId=664e8c99a2f3854f5a62caf7", vm = vm, view = view)
 
@@ -58,7 +65,22 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
-            if (it != null) { vm.stateHandle["selectedImageUri"] = it.toString() }
+            if (it != null) {
+                val workRequest = OneTimeWorkRequest.Builder(ImageUploadWorker::class.java)
+                    .setInputData(
+                        workDataOf(
+                            "image" to it.toString(),
+                            "filename" to "image.jpg",
+                            "userId" to "6670b2a9cacd892d4c9051be"
+                        )
+                    )
+                    .build()
+                workManager.enqueueUniqueWork(
+                    "one_time",
+                    ExistingWorkPolicy.KEEP,
+                    workRequest
+                )
+            }
         }
     )
 

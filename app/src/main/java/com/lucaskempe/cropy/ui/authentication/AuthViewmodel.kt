@@ -20,6 +20,9 @@ class AuthViewmodel @Inject constructor(
 
     val code = mutableStateOf("")
 
+    var selectedCountry = mutableStateOf(Country("AR", "Argentina", "+54", "🇦🇷"))
+    var phoneNumber = mutableStateOf("")
+
     val codeList =  mutableStateOf(List(6) { "" })
 
     var emailField = mutableStateOf(TextFieldValue(""))

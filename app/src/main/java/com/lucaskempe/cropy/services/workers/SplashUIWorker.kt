@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.providers.data.SplashUIDataStore
 import com.lucaskempe.cropy.providers.data.SplashUIModel
 import com.lucaskempe.cropy.services.network.RetrofitClient
@@ -26,8 +27,12 @@ class SplashUIWorker @AssistedInject constructor(
     private val newContext = context
     private val componentId = inputData.getString("id")
 
+    companion object {
+        const val baseUrl: String = BuildConfig.BASE_URL
+    }
+
     override fun doWork(): Result {
-        val client = RetrofitClient("https://8020-monospace-cropyback-1715559709578.cluster-m7tpz3bmgjgoqrktlvd4ykrc2m.cloudworkstations.dev/")
+        val client = RetrofitClient(baseUrl, newContext)
         val call = client.splashAPI.getSplashUI(componentId!!)
         call.enqueue(object : Callback<Array<SplashUIModel>?> {
             override fun onResponse(

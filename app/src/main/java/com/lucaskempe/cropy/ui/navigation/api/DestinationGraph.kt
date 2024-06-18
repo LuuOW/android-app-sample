@@ -42,6 +42,7 @@ import com.lucaskempe.cropy.ui.authentication.LoginScreen
 import com.lucaskempe.cropy.ui.authentication.CodeVerificationScreen
 import com.lucaskempe.cropy.ui.authentication.MailRequestScreen
 import com.lucaskempe.cropy.ui.authentication.ResetPasswordScreen
+import com.lucaskempe.cropy.ui.authentication.SMSRequestScreen
 import com.lucaskempe.cropy.ui.authentication.SignUpScreen
 import com.lucaskempe.cropy.ui.authentication.WelcomeScreen
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
@@ -81,7 +82,8 @@ fun DestinationGraph(
             "sign_up" to { SignUpScreen(context, activity, navController, vm=authVm) },
             "verification" to { CodeVerificationScreen(navController, authVm) },
             "reset" to { ResetPasswordScreen(navController,authVm) },
-            "mail_request" to { MailRequestScreen(navController = navController, vm = authVm) }
+            "mail_request" to { MailRequestScreen(navController = navController, vm = authVm) },
+            "sms_request" to { SMSRequestScreen(authVm, navController) }
         )
     )
     router.createGraph(

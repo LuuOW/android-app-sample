@@ -10,11 +10,14 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.R
+import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import okhttp3.*
+import okio.ByteString
 import java.io.Serializable
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
@@ -41,10 +44,13 @@ class WebSocketClient(
     fun connect(context: Context) {
         try {
             val wss = BuildConfig.WSS_BASE_URL
-            val request = Request.Builder()
-                .addHeader("Authorization", "Bearer ")
-                .url("$wss/chat?userId=664e8c99a2f3854f5a62caf7").build()
-            webSocketCli = client.newWebSocket(request, this)
+            CoroutineScope(Dispatchers.IO + Job()).launch {
+                val token = context.UserSessionDataStore.data.first().token
+                val request = Request.Builder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .url("$wss/chat?userId=664e8c99a2f3854f5a62caf7").build()
+                webSocketCli = client.newWebSocket(request, this@WebSocketClient)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -83,6 +89,10 @@ class WebSocketClient(
                 println("Error parsing message: $text")
             }
         }
+    }
+
+    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

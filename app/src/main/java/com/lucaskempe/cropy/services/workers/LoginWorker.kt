@@ -39,7 +39,7 @@ class LoginWorker @AssistedInject constructor(
     private val userName = inputData.getString("username")
     private val password = inputData.getString("password")
 
-    private val outputData = mutableStateOf(workDataOf())
+    private val outputData = mutableStateOf(workDataOf("token" to ""))
 
     companion object {
         const val baseUrl: String = BuildConfig.BASE_URL
@@ -48,7 +48,7 @@ class LoginWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         try {
-            val client = RetrofitClient(baseUrl)
+            val client = RetrofitClient(baseUrl,newContext)
             val call = client.loginAPI.login(LoginRequest(userName!!, password!!))
             call.enqueue(object : Callback<LoginResponse> {
                 override fun onResponse(
@@ -70,8 +70,7 @@ class LoginWorker @AssistedInject constructor(
 
             })
             delay(3000)
-            val token = newContext.UserSessionDataStore.data.first().token
-            return Result.success(workDataOf("token" to token))
+            return Result.success(outputData.value)
         } catch (e: Exception) {
             return Result.failure()
         }

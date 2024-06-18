@@ -23,6 +23,8 @@ class SignUpWorker @AssistedInject constructor(
         const val baseUrl: String = BuildConfig.BASE_URL
     }
 
+    private val newContext = context
+
     private val username = inputData.getString("username")!!
     private val email = inputData.getString("email")!!
     private val password = inputData.getString("password")!!
@@ -30,7 +32,7 @@ class SignUpWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         try {
-            val client = RetrofitClient(baseUrl).signupAPI
+            val client = RetrofitClient(baseUrl, newContext).signupAPI
             val call = client.signUp(SignUpRequest(username,email, password, role))
             call.enqueue(object : Callback<SignUpResponse> {
                 override fun onResponse(p0: Call<SignUpResponse>, p1: Response<SignUpResponse>) {

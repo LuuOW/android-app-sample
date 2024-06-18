@@ -14,7 +14,9 @@ import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.models.request.CodeVerifyRequest
 import com.lucaskempe.cropy.services.models.request.LoginRequest
+import com.lucaskempe.cropy.services.models.request.SMSVerifyRequest
 import com.lucaskempe.cropy.services.models.response.LoginResponse
+import com.lucaskempe.cropy.services.models.response.SMSVerifyResponse
 import com.lucaskempe.cropy.services.network.RetrofitClient
 import com.lucaskempe.cropy.services.session.UserSession
 import com.lucaskempe.cropy.services.workers.LoginWorker.Companion
@@ -36,8 +38,9 @@ class CodeVerifyWorker @AssistedInject constructor(
 
     private val newContext = context
     private val code = inputData.getString("code")!!
+    private val phone = inputData.getString("phone")!!
 
-    private val outputData = mutableStateOf(workDataOf())
+    private val outputData = mutableStateOf(workDataOf("isValid" to false))
 
     companion object {
         const val baseUrl: String = BuildConfig.BASE_URL
@@ -46,13 +49,12 @@ class CodeVerifyWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         try {
-            val client = RetrofitClient(
-                baseUrl)
-            val call = client.codeVerifyAPI.verifyCode(CodeVerifyRequest(code))
-            call.enqueue(object : Callback<CodeResponse> {
+            val client = RetrofitClient(baseUrl,newContext)
+            val call = client.codeVerifyAPI.verifySMSCode(SMSVerifyRequest(phone,code))
+            call.enqueue(object : Callback<SMSVerifyResponse> {
                 override fun onResponse(
-                    p0: Call<CodeResponse>,
-                    p1: Response<CodeResponse>
+                    p0: Call<SMSVerifyResponse>,
+                    p1: Response<SMSVerifyResponse>
                 ) {
                     if (p1.isSuccessful) {
                         Log.d("CODE_VERIFY","status: ${p1.body()?.status}")
@@ -60,7 +62,7 @@ class CodeVerifyWorker @AssistedInject constructor(
                     }
                 }
 
-                override fun onFailure(p0: Call<CodeResponse>, p1: Throwable) {
+                override fun onFailure(p0: Call<SMSVerifyResponse>, p1: Throwable) {
                     Log.d("Login", "${p1.message}, ${p1.cause}")
                 }
 

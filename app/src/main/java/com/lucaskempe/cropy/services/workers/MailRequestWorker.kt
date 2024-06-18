@@ -36,7 +36,7 @@ class MailRequestWorker @AssistedInject constructor(
     }
 
     override fun doWork(): Result {
-        val client = RetrofitClient(baseUrl)
+        val client = RetrofitClient(baseUrl,newContext)
         val call = client.mailRequestAPI.requestEmail(EmailRequest(email))
         call.enqueue(object : Callback<VerificationResponse> {
             override fun onResponse(

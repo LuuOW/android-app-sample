@@ -127,43 +127,25 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
                 modifier = Modifier,
                 onClick = {
 
+                    val navigateSignUp = true
+                    val navigateReset = false
+
                     val workRequest = OneTimeWorkRequest.Builder(CodeVerifyWorker::class.java)
-                        .setInputData(workDataOf("code" to vm.code.value))
+                        .setInputData(workDataOf("code" to vm.code.value, "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value)))
                         .build()
                     workManager.enqueueUniqueWork(
                         "one_time",
                         ExistingWorkPolicy.KEEP,
                         workRequest
                     )
-                    val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
+
                     workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
-                        if (it != null && it.outputData != null) {
-                            val isValid = it.outputData.getBoolean("isValid", false)
-                            if (isValid && vm.repeatedPassword.value.text == "") {
-                                navController.navigate("reset")
-                            } else if (isValid &&vm.emailField.value.text != "" &&
-                                vm.usernameField.value.text != "" && vm.passwordField.value.text != "" && vm.repeatedPassword.value.text != ""
-                            ) {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
-                                        .setInputData(
-                                            workDataOf(
-                                                "email" to vm.emailField.value.text,
-                                                "username" to vm.usernameField.value.text,
-                                                "password" to vm.repeatedPassword.value.text,
-                                                "role" to "USER"
-                                            )
-                                        )
-                                        .build()
-                                    workManager.enqueueUniqueWork(
-                                        "one_time",
-                                        ExistingWorkPolicy.KEEP,
-                                        work
-                                    )
-                                    delay(2000)
-                                    login(workManager,navController,vm)
-                                }
-                            }
+                        val isValid = it.outputData.getBoolean("isValid", false)
+
+                        if (navigateReset && isValid) {
+                            navController.navigate("reset")
+                        } else if (navigateSignUp && isValid) {
+                            navController.navigate("sign_up")
                         }
                     }
 

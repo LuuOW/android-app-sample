@@ -164,7 +164,7 @@ fun LoginScreen(
         }
 
         ForgotPasswordLabel {
-            navController.navigate("mail_request")
+            navController.navigate("sms_request")
         }
     }
 }

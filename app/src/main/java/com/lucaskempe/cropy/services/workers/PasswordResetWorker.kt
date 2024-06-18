@@ -20,6 +20,8 @@ class PasswordResetWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
+    private val newContext = context
+
     companion object {
         const val baseUrl: String = BuildConfig.BASE_URL
     }
@@ -30,7 +32,7 @@ class PasswordResetWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         try {
-            val client = RetrofitClient(baseUrl).passwordResetAPI
+            val client = RetrofitClient(baseUrl,newContext).passwordResetAPI
             val call = client.resetPassword(PasswordResetRequest(email, newPassword))
             call.enqueue(object: Callback<String> {
                 override fun onResponse(p0: Call<String>, p1: Response<String>) {

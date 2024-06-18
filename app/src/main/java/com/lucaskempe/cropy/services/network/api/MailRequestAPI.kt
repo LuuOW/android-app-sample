@@ -11,7 +11,7 @@ import retrofit2.http.POST
 
 interface MailRequestAPI {
 
-    @POST("/api/email/send")
+    @POST("/api/email/request")
     fun requestEmail(@Body request: EmailRequest): Call<MailRequestWorker.VerificationResponse>
 
 }

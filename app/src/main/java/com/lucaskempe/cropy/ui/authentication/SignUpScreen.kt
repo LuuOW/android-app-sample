@@ -85,6 +85,10 @@ import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath5
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath6
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath7
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath8
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -153,13 +157,7 @@ fun SignUpScreen(
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         )
-        OutlinedTextField(
-            value = vm.phoneNumberField.value,
-            onValueChange = { vm.phoneNumberField.value = it },
-            label = { Text("Phone number: ", color = Color.White) },
-            //visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-        )
+
         OutlinedTextField(
             value = vm.usernameField.value,
             onValueChange = { vm.usernameField.value= it },
@@ -183,14 +181,24 @@ fun SignUpScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
-                    if (vm.emailField.value.text != "" &&
-                        vm.usernameField.value.text != "" && vm.passwordField.value.text != "" && vm.repeatedPassword.value.text != "") {
-                        val workRequest = OneTimeWorkRequest.Builder(MailRequestWorker::class.java)
-                            .setInputData(workDataOf("email" to vm.emailField.value.text))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
+                            .setInputData(
+                                workDataOf(
+                                    "email" to vm.emailField.value.text,
+                                    "username" to vm.usernameField.value.text,
+                                    "password" to vm.repeatedPassword.value.text,
+                                    "role" to "USER"
+                                )
+                            )
                             .build()
-                        workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
-                        navController.navigate("verification")
+                        workManager.enqueueUniqueWork(
+                            "one_time",
+                            ExistingWorkPolicy.KEEP,
+                            work
+                        )
+                        delay(2000)
+                        login(workManager,navController,vm)
                     }
                 }) {
                 Text(

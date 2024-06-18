@@ -160,7 +160,8 @@ fun WelcomeScreen(navController: NavHostController) {
                 }
                 Spacer(Modifier.padding(horizontal = 10.dp))
                 Button(onClick = {
-                    navController.navigate("sign_up")
+                    navController.navigate("sms_request")
+                    //navController.navigate("sign_up")
                 }) {
                     Text(
                         text = splashData.model_button_title,

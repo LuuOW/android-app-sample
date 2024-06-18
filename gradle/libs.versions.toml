@@ -9,6 +9,7 @@ gson = "2.10.1"
 hiltAndroid = "2.49"
 hiltAndroidCompiler = "2.49"
 hiltNavigationFragment = "1.2.0"
+jetpack_compose_country_code_picker_emoji = "2.2.7"
 kotlin = "1.9.0"
 kotlinxCoroutinesTest = "1.7.3"
 secrets = "2.0.1"
@@ -65,6 +66,7 @@ generativeai = { module = "com.google.ai.client.generativeai:generativeai", vers
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
+jetpack_compose_country_code_picker_emoji = { module = "com.github.jump-sdk:jetpack_compose_country_code_picker_emoji", version.ref = "jetpack_compose_country_code_picker_emoji" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
