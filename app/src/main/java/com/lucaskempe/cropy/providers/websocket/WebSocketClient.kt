@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import okhttp3.*
 import okio.ByteString
+import okio.ByteString.Companion.encodeUtf8
 import java.io.Serializable
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
@@ -25,10 +26,11 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class WebSocketClient(
     private val state: SnackbarHostState,
-    private val urlString: String,
     private val onMessageReceived: (Message) -> Unit = {},
     private val onConnectionOpened: () -> Unit = {},
     private val onConnectionClosed: (Int, String?) -> Unit = { _, _ -> },
@@ -48,7 +50,7 @@ class WebSocketClient(
                 val token = context.UserSessionDataStore.data.first().token
                 val request = Request.Builder()
                     .addHeader("Authorization", "Bearer $token")
-                    .url("$wss/chat?userId=6671ed4dd0a71a1a0aea6d68").build()
+                    .url("$wss/chat?userId=6671c5ea7021623ec9e7d084").build()
                 webSocketCli = client.newWebSocket(request, this@WebSocketClient)
             }
         } catch (e: Exception) {
@@ -73,6 +75,13 @@ class WebSocketClient(
         )
         val json = gson.toJson(message)
         webSocketCli?.send(json)
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun sendEncodedMessage(base64Image: String, first: String, second: String, third: String) {
+        val separator = ","
+        val combinedString = "$base64Image$separator$first$separator$second$separator$third"
+        webSocketCli?.send(bytes = combinedString.encodeUtf8())
     }
 
     // WebSocketListener Overrides
@@ -108,7 +117,7 @@ class WebSocketClient(
             Snackbar
                 .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
                 .setAction("Retry") {
-                    val request = Request.Builder().url(urlString).build()
+                    val request = Request.Builder().url("").build()
                     webSocketCli = client.newWebSocket(request, this@WebSocketClient)
                 }
                 .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))

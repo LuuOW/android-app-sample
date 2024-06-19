@@ -1,18 +1,32 @@
 package com.lucaskempe.cropy.ui.screens.chat
 
+import android.content.Context
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.SnackbarData
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
@@ -26,9 +40,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -36,6 +52,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import coil.compose.rememberImagePainter
 import com.google.android.material.snackbar.Snackbar
 import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.providers.websocket.WebSocketClient
@@ -46,8 +63,11 @@ import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
 import com.lucaskempe.cropy.services.workers.ImageUploadWorker
 import kotlinx.coroutines.launch
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
+@OptIn(ExperimentalEncodingApi::class)
 @Composable
 fun ChatScreen(navController: NavController, padding: PaddingValues) {
     val modifier = Modifier
@@ -58,7 +78,10 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     val hostState = remember { SnackbarHostState() }
     val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
-    val client = WebSocketClient(state= hostState, urlString = "wss://a474-190-229-153-212.ngrok-free.app/chat?userId=664e8c99a2f3854f5a62caf7", vm = vm, view = view)
+    val uri = remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
+    val client = WebSocketClient(state= hostState, vm = vm, view = view)
 
     client.connect(vm.context)
 
@@ -66,7 +89,9 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
         contract = ActivityResultContracts.GetContent(),
         onResult = {
             if (it != null) {
-                val workRequest = OneTimeWorkRequest.Builder(ImageUploadWorker::class.java)
+                uri.value = it.toString()
+                showDialog = true
+/*                val workRequest = OneTimeWorkRequest.Builder(ImageUploadWorker::class.java)
                     .setInputData(
                         workDataOf(
                             "image" to it.toString(),
@@ -79,7 +104,15 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                     "one_time",
                     ExistingWorkPolicy.KEEP,
                     workRequest
-                )
+                )*/
+
+
+/*                val inputStream = vm.context.contentResolver.openInputStream(it)
+                val bytes = inputStream?.readBytes()
+                val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
+
+                client.sendEncodedMessage(base64Image,"6670b2a9cacd892d4c9051be", "6671c5ea7021623ec9e7d084", "hello there" )*/
+
             }
         }
     )
@@ -115,7 +148,65 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 ChatMessage(message = message)
             }
         }
+        if (showDialog) {
+            ImageMessageDialog(uri=Uri.parse(uri.value), context = vm.context, onDismissRequest = {
+                showDialog = false
+            })
+        }
     }
+}
+
+
+@Composable
+fun ImageMessageDialog(
+    uri: Uri,
+    onDismissRequest: () -> Unit = { },
+    onMessageSent: (String) -> Unit = { },
+    context: Context
+) {
+    val bitmap = remember {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val decodedBitmap = if (inputStream != null) {
+            BitmapFactory.decodeStream(inputStream)
+        } else {
+            // Handle error, e.g., show a placeholder image
+            null
+        }
+        decodedBitmap?.asImageBitmap()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = "Preview your message")
+        },
+        text = {
+            Column(modifier = Modifier) {
+
+                Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.size(400.dp))
+
+                TextField(
+                    value = "",
+                    onValueChange = { onMessageSent(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Enter message") }
+                )
+
+                Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.size(400.dp))
+
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onMessageSent("") }) {
+                Text("Send")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Preview
