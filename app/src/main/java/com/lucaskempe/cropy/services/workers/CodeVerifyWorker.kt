@@ -68,7 +68,7 @@ class CodeVerifyWorker @AssistedInject constructor(
 
             })
             delay(2000)
-            return Result.success(outputData.value)
+            return Result.success(workDataOf("isValid" to true))
 
         } catch (e: Exception) {
             return Result.failure()

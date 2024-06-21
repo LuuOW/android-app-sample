@@ -68,6 +68,13 @@ fun CustomDrawer(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
     )
 
+    val permissions = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.POST_NOTIFICATIONS,
+    )
+
     val mItems = listOf(
         DrawerRoutes.Account,
         DrawerRoutes.Settings,
@@ -105,6 +112,10 @@ fun CustomDrawer(
                             showTopBar.value = false
                             showBottomBar.value = false
                             navController.navigate("auth_graph")
+                        }
+
+                        if (item.route == "settings") {
+                            launcher.launch(permissions)
                         }
 
                     },

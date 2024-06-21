@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     kotlin("kapt") // For Kotlin annotation processing
-    // secrets
     alias(libs.plugins.mapSecrets)
     id("com.google.gms.google-services")
     id("com.google.dagger.hilt.android")

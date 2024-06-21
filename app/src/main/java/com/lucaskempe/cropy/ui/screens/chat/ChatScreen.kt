@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -78,7 +79,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     val hostState = remember { SnackbarHostState() }
     val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
-    val uri = remember { mutableStateOf("") }
+    var uri by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
 
     val client = WebSocketClient(state= hostState, vm = vm, view = view)
@@ -89,7 +90,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
         contract = ActivityResultContracts.GetContent(),
         onResult = {
             if (it != null) {
-                uri.value = it.toString()
+                uri = it.toString()
                 showDialog = true
 /*                val workRequest = OneTimeWorkRequest.Builder(ImageUploadWorker::class.java)
                     .setInputData(
@@ -118,11 +119,12 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     )
 
     Scaffold(
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState) },
         modifier = modifier.padding(padding),
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("Sticker") },
+                text = { Text("Sticker", color = Color.White) },
                 icon = { Icon(Icons.Filled.Add, contentDescription = "") },
                 onClick = { launcher.launch("image/*") }
             )
@@ -133,7 +135,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 onMessageTextChanged = { messageText = it },
                 onSendMessage = { message ->
                     messageText = ""
-                    client.sendMessage("6671ed4dd0a71a1a0aea6d68", "6670b2a9cacd892d4c9051be", message)
+                    client.sendMessage("sqluser1", "sqluser2", message)
                 }
             )
         }
@@ -149,7 +151,15 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
             }
         }
         if (showDialog) {
-            ImageMessageDialog(uri=Uri.parse(uri.value), context = vm.context, onDismissRequest = {
+            ImageMessageDialog(uri=Uri.parse(uri), context = vm.context,
+                onMessageSent = {
+                    val inputStream = vm.context.contentResolver.openInputStream(Uri.parse(uri))
+                    val bytes = inputStream?.readBytes()
+                    val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
+                    client.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
+                    showDialog = false
+                },
+                onDismissRequest = {
                 showDialog = false
             })
         }
@@ -161,7 +171,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
 fun ImageMessageDialog(
     uri: Uri,
     onDismissRequest: () -> Unit = { },
-    onMessageSent: (String) -> Unit = { },
+    onMessageSent: () -> Unit = { },
     context: Context
 ) {
     val bitmap = remember {
@@ -176,28 +186,26 @@ fun ImageMessageDialog(
     }
 
     AlertDialog(
+        modifier = Modifier.size(300.dp),
         onDismissRequest = onDismissRequest,
         title = {
             Text(text = "Preview your message")
         },
         text = {
             Column(modifier = Modifier) {
-
-                Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.size(400.dp))
-
-                TextField(
+/*                TextField(
                     value = "",
                     onValueChange = { onMessageSent(it) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Enter message") }
-                )
+                )*/
 
                 Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.size(400.dp))
 
             }
         },
         confirmButton = {
-            Button(onClick = { onMessageSent("") }) {
+            Button(onClick = { onMessageSent() }) {
                 Text("Send")
             }
         },

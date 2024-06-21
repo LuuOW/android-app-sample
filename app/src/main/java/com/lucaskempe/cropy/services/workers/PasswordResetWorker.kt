@@ -26,14 +26,14 @@ class PasswordResetWorker @AssistedInject constructor(
         const val baseUrl: String = BuildConfig.BASE_URL
     }
 
-    private val email = inputData.getString("email")!!
+    private val phone = inputData.getString("phone")!!
     private val newPassword = inputData.getString("password")!!
     private val outputData = mutableStateOf(workDataOf())
 
     override suspend fun doWork(): Result {
         try {
             val client = RetrofitClient(baseUrl,newContext).passwordResetAPI
-            val call = client.resetPassword(PasswordResetRequest(email, newPassword))
+            val call = client.resetPassword(PasswordResetRequest(phone, newPassword))
             call.enqueue(object: Callback<String> {
                 override fun onResponse(p0: Call<String>, p1: Response<String>) {
 

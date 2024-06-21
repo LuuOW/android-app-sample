@@ -174,6 +174,7 @@ fun PhoneNumberPicker(
     var showCountryPicker by remember { mutableStateOf(false) }
 
     val countries = listOf(
+        Country("UR", "Uruguay", "+59", "🇺🇾"),
         Country("AR", "Argentina", "+54", "🇦🇷"),
         Country("CA", "Canada", "+1", "🇨🇦"),
         Country("US", "United States", "+1", "🇺🇸")

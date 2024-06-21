@@ -130,7 +130,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = vm.usernameField.value,
-            onValueChange = {vm.usernameField.value = it },
+            onValueChange = { vm.usernameField.value = it },
             label = { Text("Username: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -163,9 +163,16 @@ fun LoginScreen(
             }
         }
 
+        val skip = true
+
         ForgotPasswordLabel {
-            vm.routeIsReset.value = true
-            navController.navigate("sms_request")
+            if (skip != true) {
+                vm.routeIsReset.value = true
+                navController.navigate("sms_request")
+            } else {
+                vm.routeIsReset.value = true
+                navController.navigate("reset")
+            }
         }
     }
 }
@@ -187,16 +194,27 @@ fun login(
     vm: AuthViewmodel
 ) {
     val workRequest = OneTimeWorkRequest.Builder(LoginWorker::class.java)
-        .setInputData(workDataOf("username" to vm.usernameField.value.text, "password" to vm.loginPasswordField.value.text))
+        .setInputData(
+            workDataOf(
+                "username" to vm.usernameField.value.text,
+                "password" to vm.loginPasswordField.value.text
+            )
+        )
         .build()
     workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
 
-    navController.navigate("home_graph") {
-        launchSingleTop = true
-        restoreState = false
-        popUpTo(navController.graph.findStartDestination().id) {
-            inclusive = true
-            saveState = false
+    CoroutineScope(Dispatchers.Main).launch {
+        vm.context.UserSessionDataStore.data.first().token.let {
+            if (it != "") {
+                navController.navigate("home_graph") {
+                    launchSingleTop = true
+                    restoreState = false
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                        saveState = false
+                    }
+                }
+            }
         }
     }
 
@@ -204,12 +222,11 @@ fun login(
 }
 
 
-
 @Preview
 @Composable
 fun LoginPreview() {
     val vm: AuthViewmodel = hiltViewModel()
-    val navController= rememberNavController()
-    LoginScreen(navController, vm=vm)
+    val navController = rememberNavController()
+    LoginScreen(navController, vm = vm)
 
 }

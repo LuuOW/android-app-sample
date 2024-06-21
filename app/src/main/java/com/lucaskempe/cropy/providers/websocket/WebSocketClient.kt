@@ -50,7 +50,7 @@ class WebSocketClient(
                 val token = context.UserSessionDataStore.data.first().token
                 val request = Request.Builder()
                     .addHeader("Authorization", "Bearer $token")
-                    .url("$wss/chat?userId=6671c5ea7021623ec9e7d084").build()
+                    .url("$wss/chat?userId=sqluser1").build()
                 webSocketCli = client.newWebSocket(request, this@WebSocketClient)
             }
         } catch (e: Exception) {

@@ -23,7 +23,7 @@ class AuthViewmodel @Inject constructor(
     val routeIsReset = mutableStateOf(false)
 
     var selectedCountry = mutableStateOf(Country("AR", "Argentina", "+54", "🇦🇷"))
-    var phoneNumber = mutableStateOf("")
+    var phoneNumber = mutableStateOf("3815172294")
 
     val codeList =  mutableStateOf(List(6) { "" })
 
