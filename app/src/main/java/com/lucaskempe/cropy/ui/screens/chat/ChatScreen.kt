@@ -119,12 +119,11 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
     )
 
     Scaffold(
-        containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState) },
         modifier = modifier.padding(padding),
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("Sticker", color = Color.White) },
+                text = { Text("Sticker") },
                 icon = { Icon(Icons.Filled.Add, contentDescription = "") },
                 onClick = { launcher.launch("image/*") }
             )

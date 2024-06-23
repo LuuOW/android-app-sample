@@ -14,7 +14,7 @@ data class User(
 
 val users = listOf(
     User("Jonny's Pizza", "9:00 - 15:00", "lugones 3485", "Pizza", id = 1),
-    User("Joane's Burguer", "9:00 - 15:00", "Shoreline Boulevard and E Charleston Rd", "Pizza", id = 2, image = "https://icons.veryicon.com/png/o/food--drinks/food-7/pizza-23.png"),
+    User("Joane's Burguer", "9:00 - 15:00", "Diag. 73 La Plata", "Pizza", id = 2, image = "https://icons.veryicon.com/png/o/food--drinks/food-7/pizza-23.png"),
     User("SalchiPapas Co",  "9:00 - 15:00", "lugones 3485", "Burgers", id = 3),
     // Add entries for 7 more users here following the same format
     User("Empanadas Rec",  "9:00 - 15:00", "lugones 3485", "Sushi", id = 4),

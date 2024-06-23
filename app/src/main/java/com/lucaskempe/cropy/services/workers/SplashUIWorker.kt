@@ -34,19 +34,19 @@ class SplashUIWorker @AssistedInject constructor(
     override fun doWork(): Result {
         val client = RetrofitClient(baseUrl, newContext)
         val call = client.splashAPI.getSplashUI(componentId!!)
-        call.enqueue(object : Callback<Array<SplashUIModel>?> {
+        call.enqueue(object : Callback<SplashUIModel> {
             override fun onResponse(
-                p0: Call<Array<SplashUIModel>?>,
-                p1: Response<Array<SplashUIModel>?>
+                p0: Call<SplashUIModel>,
+                p1: Response<SplashUIModel>
             ) {
                 if (p1.isSuccessful) {
-                    val splash = p1.body()?.first()
+                    val splash = p1.body()
                     CoroutineScope(Dispatchers.IO).launch {
                         newContext.SplashUIDataStore.updateData { splash!! }
                     }
                 }            }
 
-            override fun onFailure(p0: Call<Array<SplashUIModel>?>, p1: Throwable) {
+            override fun onFailure(p0: Call<SplashUIModel>, p1: Throwable) {
                 Log.d("splash", "${p1.message}, ${p1.cause}")
             }
 

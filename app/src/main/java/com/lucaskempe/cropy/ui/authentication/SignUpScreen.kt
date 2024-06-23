@@ -85,6 +85,8 @@ import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath5
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath6
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath7
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath8
+import com.lucaskempe.cropy.ui.cards.ValidatingInputTextField
+import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -151,12 +153,11 @@ fun SignUpScreen(
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
-        OutlinedTextField(
-            value = vm.emailField.value,
-            onValueChange = { vm.emailField.value = it },
-            label = { Text("Email: ", color = Color.White) },
-            //visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        ValidatingInputTextField(
+            inputValue = vm.email,
+            updateState = { input -> vm.updateEmail(input) },
+            validatorHasErrors = vm.emailHasErrors,
+            field = "Email"
         )
 
         OutlinedTextField(
@@ -167,9 +168,20 @@ fun SignUpScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
 
-        PasswordField(title = "Password: ", vm = vm, isRepeat = false, isLogin = false)
 
-        PasswordField(title = "Repeat password: ", vm = vm, isRepeat = true, isLogin = false)
+        ValidatingPasswordTextField(
+            inputValue = vm.password,
+            updateState = { input -> vm.updatePassword(input) },
+            validatorHasErrors = vm.passwordHasError,
+            isRepeat = false,
+        )
+
+        ValidatingPasswordTextField(
+            inputValue = vm.repeatPassword,
+            updateState = { input -> vm.updateRepeat(input) },
+            validatorHasErrors = vm.password != vm.repeatPassword,
+            isRepeat = true
+        )
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
@@ -185,10 +197,10 @@ fun SignUpScreen(
                     val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
                         .setInputData(
                             workDataOf(
-                                "email" to vm.emailField.value.text,
+                                "email" to vm.email,
                                 "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value),
                                 "username" to vm.usernameField.value.text,
-                                "password" to vm.repeatedPassword.value.text,
+                                "password" to vm.repeatPassword,
                                 "role" to "USER"
                             )
                         )
@@ -204,7 +216,7 @@ fun SignUpScreen(
                     }
                 }) {
                 Text(
-                    text = splashData.model_button_title,
+                    text = splashData.model_buttons_titles.first(),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -215,59 +227,6 @@ fun SignUpScreen(
             }
         }
     }
-}
-
-fun isValidPhoneNumber(phoneNumber: String): Boolean {
-    val pattern = Regex("^(?:\\+?54)?0?(?:11|[2368]\\d)(?:\\d{7,8})$")
-    return pattern.matches(phoneNumber)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PasswordField(
-    vm: AuthViewmodel,
-    title: String,
-    isRepeat: Boolean,
-    isLogin: Boolean
-) {
-    var passwordVisibility by remember { mutableStateOf(false) }
-    val icon = if (passwordVisibility) Icons.Filled.Clear else Icons.Filled.Info
-
-    OutlinedTextField(
-        colors = if (!isLogin) {
-            TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = if (vm.passwordField.value.text != "" && vm.repeatedPassword.value.text != "" && vm.repeatedPassword.value.text != vm.passwordField.value.text && vm.repeatedPassword.value.text.length >= vm.passwordField.value.text.length) {
-                    Color.Red
-                } else {
-                    Color.Gray
-                }, // Green when focused
-            )
-        } else {
-            TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color.Gray// Green when focused
-            )
-        },
-        value = if (isLogin) {
-            vm.loginPasswordField.value
-        } else {
-            if (isRepeat) { vm.repeatedPassword.value } else { vm.passwordField.value }
-        },
-        onValueChange = {
-            if (isLogin) {
-                vm.loginPasswordField.value = it
-            } else {
-                if (isRepeat) { vm.repeatedPassword.value = it } else { vm.passwordField.value = it }
-            }
-        },
-        label = { Text(title, color = Color.White) },
-        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        trailingIcon = {
-            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                Icon(imageVector = icon, contentDescription = "Toggle password visibility")
-            }
-        }
-    )
 }
 
 @Preview

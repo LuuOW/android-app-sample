@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +63,7 @@ import androidx.work.workDataOf
 import com.lucaskempe.cropy.providers.data.SplashUIModel
 import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.workers.LoginWorker
+import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -79,6 +82,7 @@ fun LoginScreen(
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
     val scope = rememberCoroutineScope()
+    var loading by remember { mutableStateOf(false) }
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -136,7 +140,12 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
 
-        PasswordField(title = "Password: ", vm = vm, isRepeat = false, isLogin = true)
+        ValidatingPasswordTextField(
+            inputValue = vm.password,
+            updateState = { input -> vm.updatePassword(input) },
+            validatorHasErrors = false,
+            isRepeat = false
+        )
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
@@ -148,11 +157,13 @@ fun LoginScreen(
                     disabledElevation = 0.dp
                 ),
                 modifier = Modifier,
+                enabled = !loading,
                 onClick = {
+                    loading = true
                     login(workManager, navController, vm)
                 }) {
                 Text(
-                    text = splashData.model_button_title,
+                    text = splashData.model_buttons_titles.first(),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -163,7 +174,7 @@ fun LoginScreen(
             }
         }
 
-        val skip = true
+        val skip = false
 
         ForgotPasswordLabel {
             if (skip != true) {
@@ -174,7 +185,35 @@ fun LoginScreen(
                 navController.navigate("reset")
             }
         }
+
+        Spacer(Modifier.padding(vertical = 10.dp))
+
+        if (!loading) return
+
+        CircularProgressIndicator(
+            modifier = Modifier.width(64.dp),
+            color = MaterialTheme.colorScheme.secondary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+
     }
+}
+
+@Composable
+fun IndeterminateCircularIndicator() {
+    var loading by remember { mutableStateOf(false) }
+
+    Button(onClick = { loading = true }, enabled = !loading) {
+        Text("Start loading")
+    }
+
+    if (!loading) return
+
+    CircularProgressIndicator(
+        modifier = Modifier.width(64.dp),
+        color = MaterialTheme.colorScheme.secondary,
+        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+    )
 }
 
 @Composable
@@ -204,6 +243,7 @@ fun login(
     workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
 
     CoroutineScope(Dispatchers.Main).launch {
+        delay(3000)
         vm.context.UserSessionDataStore.data.first().token.let {
             if (it != "") {
                 navController.navigate("home_graph") {

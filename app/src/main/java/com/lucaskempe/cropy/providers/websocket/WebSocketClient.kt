@@ -113,11 +113,12 @@ class WebSocketClient(
         onConnectionFailed(t)
         t.printStackTrace()
         println(response?.message)
+        val wss = BuildConfig.WSS_BASE_URL
         CoroutineScope(Dispatchers.IO+ Job()).launch {
             Snackbar
                 .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
                 .setAction("Retry") {
-                    val request = Request.Builder().url("").build()
+                    val request = Request.Builder().url("$wss/chat?userId=sqluser1").build()
                     webSocketCli = client.newWebSocket(request, this@WebSocketClient)
                 }
                 .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))

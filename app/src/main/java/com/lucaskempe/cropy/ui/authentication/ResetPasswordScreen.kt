@@ -37,6 +37,7 @@ import androidx.work.workDataOf
 import com.lucaskempe.cropy.providers.data.SplashUIModel
 import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
 import com.lucaskempe.cropy.services.workers.PasswordResetWorker
+import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -87,9 +88,19 @@ fun ResetPasswordScreen(
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
-        PasswordField(vm = vm, title = "New password: ", isRepeat = false, isLogin = false)
+        ValidatingPasswordTextField(
+            inputValue = vm.password,
+            updateState = { input -> vm.updatePassword(input) },
+            validatorHasErrors = vm.passwordHasError,
+            isRepeat = false,
+        )
 
-        PasswordField(vm = vm, title = "Repeat password", isRepeat = true, isLogin = false)
+        ValidatingPasswordTextField(
+            inputValue = vm.repeatPassword,
+            updateState = { input -> vm.updateRepeat(input) },
+            validatorHasErrors = vm.password != vm.repeatPassword,
+            isRepeat = true
+        )
 
 
         Row {
@@ -117,7 +128,7 @@ fun ResetPasswordScreen(
 
                 }) {
                 Text(
-                    text = splashData.model_button_title,
+                    text = splashData.model_buttons_titles.first(),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,

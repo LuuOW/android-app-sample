@@ -68,6 +68,12 @@ android {
             }
             buildConfigField("String", "WSS_BASE_URL", wssBaseUrl)
 
+            val directionsKey: String = gradleLocalProperties(rootDir, providers).getProperty("DIRECTIONS_KEY")
+            require(wssBaseUrl.isNotEmpty()) {
+                "is not set in local.properties"
+            }
+            buildConfigField("String", "DIRECTIONS_KEY", directionsKey)
+
             val glApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("ML_API_KEY")
             require(glApiKey.isNotEmpty()) {
                 "glApiKey is not set in local.properties"

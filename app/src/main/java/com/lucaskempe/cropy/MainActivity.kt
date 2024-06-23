@@ -80,6 +80,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.AppService
 import com.lucaskempe.cropy.ui.cards.ButtonSlider
+import com.lucaskempe.cropy.ui.cards.ChipSlider
 import com.lucaskempe.cropy.ui.navigation.BottomBar
 import com.lucaskempe.cropy.ui.navigation.BottomBarItem
 import com.lucaskempe.cropy.ui.navigation.DrawerRoutes
@@ -183,7 +184,7 @@ class MainActivity : ComponentActivity() {
                                     if (showTopBar.value) {
                                         Column {
                                             CustomSearch(vm = vm, drawerState)
-                                            ButtonSlider()
+                                            ChipSlider()
                                         }
                                     }
                                 },

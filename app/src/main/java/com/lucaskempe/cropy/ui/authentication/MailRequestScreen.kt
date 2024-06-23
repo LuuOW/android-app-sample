@@ -126,7 +126,7 @@ fun MailRequestScreen(
                 }
             ) {
                 Text(
-                    text = splashData.model_button_title,
+                    text = splashData.model_buttons_titles.first(),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,

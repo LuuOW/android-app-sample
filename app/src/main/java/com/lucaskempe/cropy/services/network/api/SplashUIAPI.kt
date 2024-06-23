@@ -12,7 +12,7 @@ interface SplashUIAPI {
 
     @Headers("Authorization: Bearer ")
     @GET("/api/ui")
-    fun getSplashUI(@Query("id") id: String): Call<Array<SplashUIModel>>
+    fun getSplashUI(@Query("id") id: String): Call<SplashUIModel>
 
 
 }

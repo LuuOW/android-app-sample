@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +38,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import coil.compose.AsyncImage
 import com.lucaskempe.cropy.R
+import com.lucaskempe.cropy.providers.data.SplashUIDataStore
 import com.lucaskempe.cropy.providers.data.SplashUIModel
+import com.lucaskempe.cropy.services.workers.SplashUIWorker
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 
 @Composable
@@ -47,26 +56,24 @@ fun WelcomeScreen(navController: NavHostController) {
 
     var splashData by remember { mutableStateOf(SplashUIModel()) }
     val context = LocalContext.current
-    //val workManager = WorkManager.getInstance(context)
+    val workManager = WorkManager.getInstance(context)
 
 
-    /*
-        LaunchedEffect(key1 = workManager) {
-            while (true) {
+    LaunchedEffect(key1 = workManager) {
+        while (true) {
+            delay(4000)
+            workManager.enqueueUniqueWork(
+                "one_time_work",
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequest.Builder(SplashUIWorker::class.java)
+                    .setInputData(workDataOf("id" to "1"))
+                    .build()
+            )
 
-                workManager.enqueueUniqueWork(
-                    "one_time_work",
-                    ExistingWorkPolicy.KEEP,
-                    OneTimeWorkRequest.Builder(SplashUIWorker::class.java)
-                        .setInputData( workDataOf("id" to "666c705bb45efb24eadc999c"))
-                        .build()
-                )
-
-                val data = context.SplashUIDataStore.data.first()
-                splashData = data
-                delay(4000)
-            }
-        }*/
+            val data = context.SplashUIDataStore.data.first()
+            splashData = data
+        }
+    }
 
     val largeRadialGradient = object : ShaderBrush() {
         override fun createShader(size: Size): Shader {
@@ -100,9 +107,9 @@ fun WelcomeScreen(navController: NavHostController) {
 
     Box(
     ) {
-        Column (
+        Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-        ){
+        ) {
 
             Text(
                 text = splashData.model_title,
@@ -120,7 +127,7 @@ fun WelcomeScreen(navController: NavHostController) {
                 modifier = Modifier.size(600.dp),
                 placeholder = painterResource(id = R.drawable.ic_broken_image),
                 model = splashData.model_image,
-                contentDescription =""
+                contentDescription = ""
             )
 
             Spacer(Modifier.padding(vertical = 5.dp))
@@ -149,7 +156,7 @@ fun WelcomeScreen(navController: NavHostController) {
                         navController.navigate("login")
                     }) {
                     Text(
-                        text = splashData.model_button_title,
+                        text = splashData.model_buttons_titles.first(),
                         color = Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -159,12 +166,16 @@ fun WelcomeScreen(navController: NavHostController) {
                     )
                 }
                 Spacer(Modifier.padding(horizontal = 10.dp))
+                val skip = false
                 Button(onClick = {
-                    navController.navigate("sms_request")
-                    //navController.navigate("sign_up")
+                    if (skip == true) {
+                        navController.navigate("sign_up")
+                    } else {
+                        navController.navigate("sms_request")
+                    }
                 }) {
                     Text(
-                        text = splashData.model_button_title,
+                        text = splashData.model_buttons_titles[1],
                         color = Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
