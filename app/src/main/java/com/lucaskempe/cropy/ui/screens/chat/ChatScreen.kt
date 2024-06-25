@@ -108,11 +108,11 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 )*/
 
 
-/*                val inputStream = vm.context.contentResolver.openInputStream(it)
+                val inputStream = vm.context.contentResolver.openInputStream(it)
                 val bytes = inputStream?.readBytes()
                 val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
 
-                client.sendEncodedMessage(base64Image,"6670b2a9cacd892d4c9051be", "6671c5ea7021623ec9e7d084", "hello there" )*/
+                client.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
 
             }
         }
@@ -134,7 +134,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 onMessageTextChanged = { messageText = it },
                 onSendMessage = { message ->
                     messageText = ""
-                    client.sendMessage("sqluser1", "sqluser2", message)
+                    client.sendMessage("sqluser4", "sqluser1", message)
                 }
             )
         }

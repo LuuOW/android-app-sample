@@ -73,12 +73,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.work.WorkManager
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.lucaskempe.cropy.providers.data.UserSessionDataStore
 import com.lucaskempe.cropy.services.AppService
+import com.lucaskempe.cropy.services.network.token.TokenUtil.retrieveToken
+import com.lucaskempe.cropy.ui.authentication.login
 import com.lucaskempe.cropy.ui.cards.ButtonSlider
 import com.lucaskempe.cropy.ui.cards.ChipSlider
 import com.lucaskempe.cropy.ui.navigation.BottomBar
@@ -95,6 +98,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @ExperimentalMaterial3Api
@@ -113,18 +117,17 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        val session = mutableStateOf(false)
+        var session by mutableStateOf(false)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val loginData = context.UserSessionDataStore.data.first()
-            if (loginData.token != "") {
-                session.value = true
-            }
+        val token = runBlocking { retrieveToken(context) }
+        if (token != "") {
+            session = true
         }
 
         setContent {
             val vm: UsersViewModel = hiltViewModel()
             val navController: NavHostController = rememberNavController()
+            val workManager = WorkManager.getInstance(context)
 
             startService(intent)
 
@@ -312,7 +315,7 @@ class MainActivity : ComponentActivity() {
                                         .padding(innerPadding),
                                     navController = navController,
                                     context = this,
-                                    session = session.value
+                                    session = session
                                 )
                             }
                         }

@@ -166,13 +166,8 @@ fun WelcomeScreen(navController: NavHostController) {
                     )
                 }
                 Spacer(Modifier.padding(horizontal = 10.dp))
-                val skip = false
                 Button(onClick = {
-                    if (skip == true) {
-                        navController.navigate("sign_up")
-                    } else {
-                        navController.navigate("sms_request")
-                    }
+                    navController.navigate("sms_request")
                 }) {
                     Text(
                         text = splashData.model_buttons_titles[1],

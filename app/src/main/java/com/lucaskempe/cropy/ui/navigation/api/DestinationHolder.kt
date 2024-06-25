@@ -16,7 +16,7 @@ fun DestinationHolder(
 
     NavHost(
         navController = navController,
-        startDestination = if(true) "home_graph" else "auth_graph",
+        startDestination = if(session) "home_graph" else "auth_graph",
     ) {
         destinationSet.forEach { graph ->
             navigation(

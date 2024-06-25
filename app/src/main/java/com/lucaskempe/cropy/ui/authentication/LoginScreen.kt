@@ -174,16 +174,9 @@ fun LoginScreen(
             }
         }
 
-        val skip = false
-
         ForgotPasswordLabel {
-            if (skip != true) {
-                vm.routeIsReset.value = true
-                navController.navigate("sms_request")
-            } else {
-                vm.routeIsReset.value = true
-                navController.navigate("reset")
-            }
+            vm.routeIsReset.value = true
+            navController.navigate("sms_request")
         }
 
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -236,7 +229,7 @@ fun login(
         .setInputData(
             workDataOf(
                 "username" to vm.usernameField.value.text,
-                "password" to vm.loginPasswordField.value.text
+                "password" to vm.password
             )
         )
         .build()
@@ -244,15 +237,13 @@ fun login(
 
     CoroutineScope(Dispatchers.Main).launch {
         delay(3000)
-        vm.context.UserSessionDataStore.data.first().token.let {
-            if (it != "") {
-                navController.navigate("home_graph") {
-                    launchSingleTop = true
-                    restoreState = false
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        inclusive = true
-                        saveState = false
-                    }
+        vm.context.UserSessionDataStore.data.collect {
+            navController.navigate("home_graph") {
+                launchSingleTop = true
+                restoreState = false
+                popUpTo(navController.graph.findStartDestination().id) {
+                    inclusive = true
+                    saveState = false
                 }
             }
         }

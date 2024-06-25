@@ -35,6 +35,8 @@ class RetrofitCall(context: Context) {
 
     val directionsAPI = retrofit.create(DirectionsAPI::class.java)
 
+    val distanceAPI = retrofit.create(DistanceAPI::class.java)
+
 }
 
 class MapsAuthInterceptor(private val context: Context) : Interceptor {

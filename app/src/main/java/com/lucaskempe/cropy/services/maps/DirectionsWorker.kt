@@ -29,9 +29,6 @@ class DirectionsWorker @AssistedInject constructor(
 
     val newContext = context
 
-    val current = inputData.getString("current")!!
-    val starting = inputData.getString("starting")!!
-
     val origin = inputData.getString("origin")!!
     val destination = inputData.getString("destination")!!
 
@@ -51,24 +48,7 @@ class DirectionsWorker @AssistedInject constructor(
                                 p1.body()!!
                             }
                         }
-                    }
-                }
 
-                override fun onFailure(p0: Call<Directions>, p1: Throwable) {
-                    println("Error: ${p1.cause}")
-                }
-
-            })
-
-            val call2 = client.getDirectionsTo(current, starting, token)
-            call2.enqueue(object: Callback<Directions> {
-
-                override fun onResponse(p0: Call<Directions>, p1: Response<Directions>) {
-                    if (p1.isSuccessful) {
-                        println(p1.body())
-                        CoroutineScope(Dispatchers.IO).launch {
-                            newContext.Directions2DataStore.updateData { p1.body()!! }
-                        }
                     }
                 }
 

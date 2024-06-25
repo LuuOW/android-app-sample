@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.R
 import com.lucaskempe.cropy.providers.data.UserSessionDataStore
+import com.lucaskempe.cropy.services.network.token.TokenUtil.retrieveToken
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
@@ -47,10 +48,10 @@ class WebSocketClient(
         try {
             val wss = BuildConfig.WSS_BASE_URL
             CoroutineScope(Dispatchers.IO + Job()).launch {
-                val token = context.UserSessionDataStore.data.first().token
+               val token = runBlocking { retrieveToken(context)  }
                 val request = Request.Builder()
                     .addHeader("Authorization", "Bearer $token")
-                    .url("$wss/chat?userId=sqluser1").build()
+                    .url("$wss/chat?userId=sqluser4").build()
                 webSocketCli = client.newWebSocket(request, this@WebSocketClient)
             }
         } catch (e: Exception) {
@@ -118,7 +119,10 @@ class WebSocketClient(
             Snackbar
                 .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
                 .setAction("Retry") {
-                    val request = Request.Builder().url("$wss/chat?userId=sqluser1").build()
+                    val token = runBlocking { retrieveToken(vm.context)  }
+                    val request = Request.Builder()
+                        .addHeader("Authorization", "Bearer $token")
+                        .url("$wss/chat?userId=sqluser4").build()
                     webSocketCli = client.newWebSocket(request, this@WebSocketClient)
                 }
                 .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))

@@ -20,5 +20,5 @@ interface BgErasingAPI {
     suspend fun removeBackground(
         @Part imageFile: MultipartBody.Part,
         @Part("size") size: RequestBody
-    ): ResponseBody
+    )
 }

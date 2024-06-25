@@ -159,7 +159,7 @@ fun HomeApp(navController: NavHostController) {
                 itemData = data,
                 modifier,
                 onAnimationFinish = {
-                    myIconList.dropLast(0)
+                    //myIconList.removeAt(myIconList.lastIndex)
                 },
                 onClick = {
                     if (!data.isEmpty.value && data.isEnabled.value) {
@@ -167,7 +167,7 @@ fun HomeApp(navController: NavHostController) {
                         data.offset.value = gridState.layoutInfo.visibleItemsInfo.last().offset
                         myIconList.filterNot { it.id == 16 }.forEachIndexed { index, iconItem ->
                             if (iconItem.isEmpty.value) {
-                                //iconItem.offset.value = gridState.layoutInfo.visibleItemsInfo.last().offset
+                               // iconItem.offset.value = gridState.layoutInfo.visibleItemsInfo. last() .offset
                             }
                         }
                     } else if (!data.isEmpty.value && !data.isEnabled.value) {
@@ -251,7 +251,9 @@ fun createIconList(): MutableList<IconItem> {
     // Add 7 IconItems that are empty and disabled
     for (i in 2..8) {
         iconList.add(
-            IconItem(id = i, isEmpty = mutableStateOf(true), isEnabled = mutableStateOf(false))
+            IconItem(
+                id = i, isEmpty = mutableStateOf(true), isEnabled = mutableStateOf(false),
+            )
         )
     }
 
@@ -270,4 +272,4 @@ fun createIconList(): MutableList<IconItem> {
 }
 
 // Usage example:
-val myIconList = createIconList()
+var myIconList = createIconList()

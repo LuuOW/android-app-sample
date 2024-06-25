@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class EndLocation (
 
-  @SerializedName("lat" ) var lat : Double? = null,
-  @SerializedName("lng" ) var lng : Double? = null
+  @SerializedName("lat" ) var lat : Double = 0.0,
+  @SerializedName("lng" ) var lng : Double = 0.0
 
 )
