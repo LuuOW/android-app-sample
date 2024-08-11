@@ -21,4 +21,11 @@ dependencyResolutionManagement {
 
 rootProject.name = "Cropy"
 include(":app")
- 
+include(":components")
+include(":network")
+include(":entities")
+include(":datastore")
+include(":workers")
+include(":workers")
+include(":repositories")
+include(":maps")

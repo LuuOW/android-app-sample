@@ -1,27 +1,13 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     kotlin("kapt") // For Kotlin annotation processing
+    id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
     alias(libs.plugins.mapSecrets)
     id("com.google.gms.google-services")
-    id("com.google.dagger.hilt.android")
-}
-
-
-fun getLocalProperty(propertyName: String, project: Project): String? {
-    val localPropertiesFile = project.rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        val properties = Properties()
-        properties.load(localPropertiesFile.inputStream())
-        return properties.getProperty(propertyName)
-    } else {
-        println("local.properties file not found")
-        return null
-    }
 }
 
 
@@ -153,6 +139,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.graphics.shapes.android)
+    implementation(libs.androidx.runtime.livedata)
     //implementation(libs.compose.preview.renderer)
     //implementation(libs.androidx.navigation.safe.args.generator)
     val room_version = "2.6.1"
@@ -197,10 +184,16 @@ dependencies {
     // hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.hilt.navigation.fragment)
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("androidx.hilt:hilt-work:1.2.0")
+    implementation(libs.androidx.hilt.navigation.compose)
 
+    implementation(project(":datastore"))
+    implementation(project(":entities"))
+    implementation(project(":components"))
+    implementation(project(":workers"))
+    implementation(project(":repositories"))
+    implementation(project(":maps"))
 
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:$room_version")

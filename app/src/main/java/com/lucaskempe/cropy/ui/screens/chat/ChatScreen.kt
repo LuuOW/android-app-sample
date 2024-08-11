@@ -3,44 +3,36 @@ package com.lucaskempe.cropy.ui.screens.chat
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material.SnackbarData
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -49,20 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import androidx.work.workDataOf
-import coil.compose.rememberImagePainter
 import com.google.android.material.snackbar.Snackbar
-import com.lucaskempe.cropy.BuildConfig
+import com.lucaskempe.cropy.R
+import com.lucaskempe.cropy.providers.websocket.Message
 import com.lucaskempe.cropy.providers.websocket.WebSocketClient
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
-import com.lucaskempe.cropy.R
-import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
-import com.lucaskempe.cropy.services.workers.ImageUploadWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -70,21 +57,30 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
-fun ChatScreen(navController: NavController, padding: PaddingValues) {
+fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatViewModel) {
     val modifier = Modifier
-    val vm: ChatViewModel = hiltViewModel()
-
     val view = LocalView.current
     var messageText by remember { mutableStateOf("") }
     val hostState = remember { SnackbarHostState() }
-    val workManager: WorkManager = WorkManager.getInstance(vm.context)
 
     var uri by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
 
-    val client = WebSocketClient(state= hostState, vm = vm, view = view)
+    LaunchedEffect(vm.errorMessage) {
+        if (vm.errorMessage.value) {
+            Snackbar
+                .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
+                .setAction("Retry") { vm.webSocketClient.connect() }
+                .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))
+                .setBackgroundTint(ContextCompat.getColor(vm.context, R.color.notred))
+                .show()
+            vm.errorMessage.emit(false)
+        }
+    }
 
-    client.connect(vm.context)
+    LaunchedEffect(Unit) {
+        vm.webSocketClient.connect()
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -112,7 +108,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 val bytes = inputStream?.readBytes()
                 val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
 
-                client.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
+                vm.webSocketClient.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
 
             }
         }
@@ -134,7 +130,8 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                 onMessageTextChanged = { messageText = it },
                 onSendMessage = { message ->
                     messageText = ""
-                    client.sendMessage("sqluser4", "sqluser1", message)
+                    vm.webSocketClient.sendMessage("sqluser4", "sqluser1", message)
+                    vm.messages.add(MessageModel(message, isFromCurrentUser = true, formatTimestampToHourMinute()))
                 }
             )
         }
@@ -146,7 +143,9 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
             reverseLayout = false,
         ) {
             itemsIndexed(vm.messages) { index, message ->
-                ChatMessage(message = message)
+                AnimatedVisibility(visible = true) {
+                    ChatMessage(message = message)
+                }
             }
         }
         if (showDialog) {
@@ -155,7 +154,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues) {
                     val inputStream = vm.context.contentResolver.openInputStream(Uri.parse(uri))
                     val bytes = inputStream?.readBytes()
                     val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
-                    client.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
+                    vm.webSocketClient.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
                     showDialog = false
                 },
                 onDismissRequest = {
@@ -219,6 +218,7 @@ fun ImageMessageDialog(
 @Preview
 @Composable
 fun ChatScreenPreview() {
-    ChatScreen(navController = NavController(LocalContext.current), padding = PaddingValues())
+    val vm: ChatViewModel = hiltViewModel()
+    ChatScreen(navController = NavController(LocalContext.current), padding = PaddingValues(), vm)
 }
 

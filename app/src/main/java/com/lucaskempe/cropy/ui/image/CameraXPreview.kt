@@ -32,8 +32,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
-fun CameraXPreview(context: Context) {
-
+fun CameraXPreview() {
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val preview = Preview.Builder().build()
     val lensFacing = CameraSelector.LENS_FACING_BACK

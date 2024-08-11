@@ -16,7 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.lucaskempe.cropy.services.models.users
+import com.cropy.entities.user.users
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 
 @Composable

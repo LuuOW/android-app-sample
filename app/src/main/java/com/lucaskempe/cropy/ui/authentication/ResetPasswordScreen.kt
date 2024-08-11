@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,23 +25,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.lucaskempe.cropy.providers.data.SplashUIModel
-import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
-import com.lucaskempe.cropy.services.workers.PasswordResetWorker
+import com.cropy.entities.ui.UIModel
 import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,8 +44,8 @@ fun ResetPasswordScreen(
     vm: AuthViewmodel
 ) {
 
-    var splashData by remember { mutableStateOf(SplashUIModel()) }
-    val workManager: WorkManager = WorkManager.getInstance(vm.context)
+    var splashData by remember { mutableStateOf(UIModel()) }
+    val scope = rememberCoroutineScope()
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -112,11 +107,9 @@ fun ResetPasswordScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-
-                    val workRequest = OneTimeWorkRequest.Builder(PasswordResetWorker::class.java)
-                        .setInputData(workDataOf("password" to vm.passwordField.value.text, "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value)))
-                        .build()
-                    workManager.enqueueUniqueWork("one_time", ExistingWorkPolicy.KEEP, workRequest)
+                    scope.launch(Dispatchers.IO){
+                        vm.resetPassword()
+                    }
                     navController.navigate("login") {
                         launchSingleTop = true
                         restoreState = false
@@ -125,7 +118,6 @@ fun ResetPasswordScreen(
                             saveState = false
                         }
                     }
-
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),

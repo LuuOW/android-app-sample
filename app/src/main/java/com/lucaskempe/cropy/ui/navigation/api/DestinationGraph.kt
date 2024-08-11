@@ -1,13 +1,11 @@
 package com.lucaskempe.cropy.ui.navigation.api
 
-import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -36,10 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
+import com.lucaskempe.cropy.viewmodels.MapsViewModel
 import com.lucaskempe.cropy.ui.authentication.AuthViewmodel
-import com.lucaskempe.cropy.ui.authentication.LoginScreen
 import com.lucaskempe.cropy.ui.authentication.CodeVerificationScreen
+import com.lucaskempe.cropy.ui.authentication.LoginScreen
 import com.lucaskempe.cropy.ui.authentication.MailRequestScreen
 import com.lucaskempe.cropy.ui.authentication.ResetPasswordScreen
 import com.lucaskempe.cropy.ui.authentication.SMSRequestScreen
@@ -48,42 +46,39 @@ import com.lucaskempe.cropy.ui.authentication.WelcomeScreen
 import com.lucaskempe.cropy.ui.cards.UserCardScreen
 import com.lucaskempe.cropy.ui.image.CameraXPreview
 import com.lucaskempe.cropy.ui.screens.BuildScreen
-import com.lucaskempe.cropy.ui.screens.chat.ChatScreen
 import com.lucaskempe.cropy.ui.screens.HomeScreen
 import com.lucaskempe.cropy.ui.screens.InspectorsScreen
 import com.lucaskempe.cropy.ui.screens.MapScreen
+import com.lucaskempe.cropy.ui.screens.chat.ChatScreen
+import com.lucaskempe.cropy.viewmodels.ChatViewModel
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
 
 @Composable
 @ExperimentalMaterial3Api
 fun DestinationGraph(
-    activity: Activity,
-    modifier: Modifier,
-    context: Context,
     session: Boolean,
+    authViewmodel: AuthViewmodel,
+    mapsViewModel: MapsViewModel,
+    chatViewModel: ChatViewModel,
     navController: NavHostController,
     padding: PaddingValues
 ) {
 
     val nvm: NavigationViewModel = hiltViewModel()
-
     val vm: UsersViewModel = hiltViewModel()
-
-    val authVm: AuthViewmodel = hiltViewModel()
-
     val router: RouterDestinity = RouterImplementation(nvm.destSet)
 
     router.createGraph(
         "auth_graph",
         "welcome",
         mutableMapOf(
-            "welcome" to { WelcomeScreen(navController) },
-            "login" to { LoginScreen(navController, vm = authVm) },
-            "sign_up" to { SignUpScreen(context, activity, navController, vm=authVm) },
-            "verification" to { CodeVerificationScreen(navController, authVm) },
-            "reset" to { ResetPasswordScreen(navController,authVm) },
-            "mail_request" to { MailRequestScreen(navController = navController, vm = authVm) },
-            "sms_request" to { SMSRequestScreen(authVm, navController) }
+            "welcome" to { WelcomeScreen(navController, authViewmodel) },
+            "login" to { LoginScreen(navController, vm = authViewmodel) },
+            "sign_up" to { SignUpScreen(vm=authViewmodel) },
+            "verification" to { CodeVerificationScreen(navController, authViewmodel) },
+            "reset" to { ResetPasswordScreen(navController,authViewmodel) },
+            "mail_request" to { MailRequestScreen(navController = navController, vm = authViewmodel) },
+            "sms_request" to { SMSRequestScreen(authViewmodel, navController) }
         )
     )
     router.createGraph(
@@ -102,7 +97,7 @@ fun DestinationGraph(
                     navController,
                     onClick = { navController.navigate("map") })
             },
-            "map" to { MapScreen(modifier, navController, context, vm) }
+            "map" to { MapScreen(mapsViewModel) }
         )
     )
 
@@ -111,7 +106,7 @@ fun DestinationGraph(
         "inspector",
         mutableMapOf(
             "inspector" to { InspectorsScreen(navController, vm) },
-            "image_capture" to { CameraXPreview(context) }
+            "image_capture" to { CameraXPreview() }
         )
     )
 
@@ -119,7 +114,7 @@ fun DestinationGraph(
         graphName = "build_graph",
         startGraphDestiny = "build",
         destinationList = mutableMapOf(
-            "build" to { BuildScreen(navController, vm, modifier) },
+            "build" to { BuildScreen(navController, vm) },
         )
     )
 
@@ -127,7 +122,7 @@ fun DestinationGraph(
         graphName = "chat_graph",
         startGraphDestiny = "chat",
         destinationList = mutableMapOf(
-            "chat" to { ChatScreen(navController, padding) }
+            "chat" to { ChatScreen(navController, padding, chatViewModel) }
         )
     )
 
@@ -139,7 +134,7 @@ fun DestinationGraph(
         )
     )
 
-    DestinationHolder(nvm.destSet, navController, session)
+    DestinationHolder(session,nvm.destSet, navController)
 
 }
 

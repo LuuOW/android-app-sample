@@ -1,40 +1,28 @@
 package com.lucaskempe.cropy.ui.navigation
 
-import android.app.Activity
 import android.content.Context
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
-import com.google.firebase.auth.FirebaseAuth
-import com.lucaskempe.cropy.ui.authentication.SignUpScreen
-import com.lucaskempe.cropy.ui.cards.UserCardScreen
-import com.lucaskempe.cropy.ui.image.CameraXPreview
+import com.lucaskempe.cropy.viewmodels.MapsViewModel
+import com.lucaskempe.cropy.ui.authentication.AuthViewmodel
 import com.lucaskempe.cropy.ui.navigation.api.DestinationGraph
-import com.lucaskempe.cropy.ui.screens.BuildScreen
-import com.lucaskempe.cropy.ui.screens.HomeScreen
-import com.lucaskempe.cropy.ui.screens.InspectorsScreen
-import com.lucaskempe.cropy.ui.screens.MapScreen
-import com.lucaskempe.cropy.viewmodels.UsersViewModel
+import com.lucaskempe.cropy.viewmodels.ChatViewModel
 
 
 @ExperimentalMaterial3Api
 @Composable
 fun NavGraph(
-    activity: Activity,
-    navController: NavHostController,
-    modifier: Modifier,
-    context: Context,
     session: Boolean,
+    authViewmodel: AuthViewmodel,
+    mapsViewModel: MapsViewModel,
+    chatViewModel: ChatViewModel,
+    navController: NavHostController,
     padding: PaddingValues
 ) {
-    DestinationGraph(activity,modifier,context, session =session ,navController, padding)
+    DestinationGraph(session,authViewmodel,mapsViewModel,chatViewModel ,navController, padding)
 
 
  /*   NavHost(

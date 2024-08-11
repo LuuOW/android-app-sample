@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ButtonGrid(
-    modifier: Modifier,
     sheetState: SheetState,
     vm: UsersViewModel
 ) {
@@ -80,7 +79,7 @@ fun ButtonGrid(
     LazyVerticalStaggeredGrid(
         state = gridState,
         columns = StaggeredGridCells.Adaptive(88.dp),
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .height(290.dp)
     ) {

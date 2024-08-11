@@ -1,63 +1,35 @@
 package com.lucaskempe.cropy.providers.websocket
 
 import android.content.Context
-import android.view.View
-import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.SnackbarResult
-import androidx.core.content.ContextCompat
-import com.google.android.material.snackbar.Snackbar
+import android.content.Intent
 import com.google.gson.Gson
 import com.lucaskempe.cropy.BuildConfig
-import com.lucaskempe.cropy.R
-import com.lucaskempe.cropy.providers.data.UserSessionDataStore
-import com.lucaskempe.cropy.services.network.token.TokenUtil.retrieveToken
-import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
-import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
-import com.lucaskempe.cropy.viewmodels.ChatViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.first
-import okhttp3.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import java.io.Serializable
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
+import java.util.Base64
+import javax.inject.Inject
 
-class WebSocketClient(
-    private val state: SnackbarHostState,
-    private val onMessageReceived: (Message) -> Unit = {},
-    private val onConnectionOpened: () -> Unit = {},
-    private val onConnectionClosed: (Int, String?) -> Unit = { _, _ -> },
-    private val onConnectionFailed: (Throwable) -> Unit = {},
-    private val vm : ChatViewModel,
-    private val view: View
+class WebSocketClient @Inject constructor(
+    private val okHttpClient: OkHttpClient,
+    private val gson: Gson,
+    private val context: Context
 ) : WebSocketListener() {
 
-    private val client = OkHttpClient()
     private var webSocketCli: WebSocket? = null
-    private val gson = Gson()
 
-    fun connect(context: Context) {
-        try {
-            val wss = BuildConfig.WSS_BASE_URL
-            CoroutineScope(Dispatchers.IO + Job()).launch {
-               val token = runBlocking { retrieveToken(context)  }
-                val request = Request.Builder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .url("$wss/chat?userId=sqluser4").build()
-                webSocketCli = client.newWebSocket(request, this@WebSocketClient)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
+    fun connect() {
+        val wss = BuildConfig.WSS_BASE_URL
+        val request = Request.Builder().url("$wss/chat?userId=sqluser4").build()
+        webSocketCli = okHttpClient.newWebSocket(request, this@WebSocketClient)
     }
 
     fun disconnect() {
@@ -65,122 +37,53 @@ class WebSocketClient(
         webSocketCli = null
     }
 
-    fun sendMessage(senderId: String ,recipientId: String, messageContent: String) {
+    fun sendMessage(senderId: String, recipientId: String, messageContent: String) {
         val message = Message(senderId, recipientId = recipientId, messageContent = messageContent)
-        vm.messages.add(
-            MessageModel(
-                messageContent,
-                isFromCurrentUser = true,
-                recipientId
-            )
-        )
         val json = gson.toJson(message)
         webSocketCli?.send(json)
     }
 
-    @OptIn(ExperimentalEncodingApi::class)
     fun sendEncodedMessage(base64Image: String, first: String, second: String, third: String) {
         val separator = ","
         val combinedString = "$base64Image$separator$first$separator$second$separator$third"
         webSocketCli?.send(bytes = combinedString.encodeUtf8())
     }
 
-    // WebSocketListener Overrides
     override fun onOpen(webSocket: WebSocket, response: Response) {
-        onConnectionOpened()
+
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {
-        CoroutineScope(Dispatchers.Main).launch { // Handle UI updates on the main thread
-            try {
-                val message = gson.fromJson(text, Message::class.java)
-                vm.messages.add(MessageModel(message.messageContent, isFromCurrentUser = false, timestamp = formatTimestampToHourMinute()))
-            } catch (e: Exception) {
-                println("Error parsing message: $text")
-            }
-        }
+        val message = gson.fromJson(text, Message::class.java)
+        val intent = Intent("ACTION_MESSAGE_RECEIVED")
+        intent.putExtra("MESSAGE", message.messageContent)
+        context.sendBroadcast(intent)
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-
+        val image = Base64.getDecoder().decode(bytes.base64())
+        val intent = Intent("ACTION_BASE64_MESSAGE_RECEIVED")
+        intent.putExtra("BASE64_IMAGE", image)
+        context.sendBroadcast(intent)
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         webSocket.close(NORMAL_CLOSURE_STATUS, null)
-        onConnectionClosed(code, reason)
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        onConnectionFailed(t)
-        t.printStackTrace()
-        println(response?.message)
-        val wss = BuildConfig.WSS_BASE_URL
-        CoroutineScope(Dispatchers.IO+ Job()).launch {
-            Snackbar
-                .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
-                .setAction("Retry") {
-                    val token = runBlocking { retrieveToken(vm.context)  }
-                    val request = Request.Builder()
-                        .addHeader("Authorization", "Bearer $token")
-                        .url("$wss/chat?userId=sqluser4").build()
-                    webSocketCli = client.newWebSocket(request, this@WebSocketClient)
-                }
-                .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))
-                    .setBackgroundTint(ContextCompat.getColor(vm.context, R.color.notred))
-                    .show()
-
-/*            val result = state.showSnackbar(
-                "WSS Connection Failed",
-                "Retry",
-                SnackbarDuration.Short
-
-                if (result == SnackbarResult.ActionPerformed) {
-                val request = Request.Builder().url(urlString).build()
-                webSocketCli = client.newWebSocket(request, this@WebSocketClient)
-            }
-
-            )*/
-        }
+        val intent = Intent("ERROR")
+        context.sendBroadcast(intent)
     }
 
     companion object {
         private const val NORMAL_CLOSURE_STATUS = 1000
     }
-
-    private fun getTrustManager(context: Context): X509TrustManager? {
-        try {
-            val certificateFactory = CertificateFactory.getInstance("X.509")
-            val inputStream = context.resources.openRawResource(R.raw.cert)
-            val certificate = certificateFactory.generateCertificate(inputStream) as X509Certificate
-            inputStream.close()
-
-            val keyStoreType = KeyStore.getDefaultType()
-            val keyStore = KeyStore.getInstance(keyStoreType).apply {
-                load(null, null)
-                setCertificateEntry("ca", certificate)
-            }
-
-            println("Certificate Subject: ${certificate.subjectDN.name}")
-            println("Certificate Issuer: ${certificate.issuerDN.name}")
-            println("Certificate Valid From: ${certificate.notBefore}")
-            println("Certificate Valid To: ${certificate.notAfter}")
-
-
-            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
-            val trustManagerFactory = TrustManagerFactory.getInstance(tmfAlgorithm)
-            trustManagerFactory.init(keyStore)
-            return trustManagerFactory.trustManagers[0] as X509TrustManager
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
-    }
 }
-
 
 
 data class Message(
     val senderId: String,
     val recipientId: String,
     val messageContent: String
-): Serializable
+) : Serializable

@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 fun BuildScreen(
     navController: NavHostController,
     vm: UsersViewModel,
-    modifier: Modifier
 ) {
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -42,9 +41,9 @@ fun BuildScreen(
 
     Column(
         verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        ButtonGrid(modifier = modifier, sheetState = sheetState, vm=vm)
+        ButtonGrid(sheetState = sheetState, vm=vm)
     }
 
     if (sheetState.isVisible) {
@@ -62,7 +61,7 @@ fun BuildScreen(
             sheetState = sheetState,
             content = {
                 Column(
-                    modifier //.verticalScroll(scrollState)
+                    Modifier //.verticalScroll(scrollState)
                 ) {
 
                     Row() {
@@ -94,8 +93,8 @@ fun BuildScreen(
                         }
                     }
 
-                    ButtonGrid(modifier = modifier, sheetState = sheetState, vm = vm)
-                    Spacer(modifier = modifier.padding(bottom = 150.dp))
+                    ButtonGrid(sheetState = sheetState, vm = vm)
+                    Spacer(modifier = Modifier.padding(bottom = 150.dp))
 
 
                 }

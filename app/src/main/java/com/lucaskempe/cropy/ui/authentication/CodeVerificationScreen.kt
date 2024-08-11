@@ -15,9 +15,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,39 +43,26 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.google.android.material.snackbar.Snackbar
-import com.lucaskempe.cropy.R
-import com.lucaskempe.cropy.providers.data.SplashUIModel
-import com.lucaskempe.cropy.services.workers.CodeVerifyWorker
-import com.lucaskempe.cropy.services.workers.MailRequestWorker
-import com.lucaskempe.cropy.services.workers.SignUpWorker
-import kotlinx.coroutines.CoroutineScope
+import com.cropy.entities.ui.UIModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.Request
-
 
 @Composable
-fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) {
+fun CodeVerificationScreen(
+    navController: NavHostController,
+    vm: AuthViewmodel
+) {
 
-    val workManager: WorkManager = WorkManager.getInstance(vm.context)
-    val view = LocalView.current
+    var splashData by remember { mutableStateOf(UIModel()) }
     val scope = rememberCoroutineScope()
-
-    var splashData by remember { mutableStateOf(SplashUIModel()) }
+    var codeAccepted by remember { mutableStateOf(false) }
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -92,6 +81,15 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
             .fillMaxSize()
             .background(largeRadialGradient)
     )
+
+    LaunchedEffect(codeAccepted) {
+        if (codeAccepted && vm.routeIsReset) {
+            navController.navigate("reset")
+        } else if (codeAccepted && !vm.routeIsReset){
+            navController.navigate("sign_up")
+        }
+        codeAccepted = false
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -112,7 +110,7 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
         Spacer(Modifier.padding(vertical = 10.dp))
 
         VerificationCodeField(onFilled = {
-            vm.code.value = it
+            vm.code = it
         })
 
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -126,28 +124,13 @@ fun CodeVerificationScreen(navController: NavHostController, vm: AuthViewmodel) 
                 ),
                 modifier = Modifier,
                 onClick = {
-
-                    val workRequest = OneTimeWorkRequest.Builder(CodeVerifyWorker::class.java)
-                        .setInputData(workDataOf("code" to vm.code.value, "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value)))
-                        .build()
-                    workManager.enqueueUniqueWork(
-                        "one_time",
-                        ExistingWorkPolicy.KEEP,
-                        workRequest
-                    )
-
-                    workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever {
-                        if (it != null) {
-                            val isValid = it.outputData.getBoolean("isValid", false)
-
-                            if (vm.routeIsReset.value && isValid) {
-                                navController.navigate("reset")
-                            } else if (!vm.routeIsReset.value && isValid) {
-                                navController.navigate("sign_up")
+                    scope.launch(Dispatchers.IO) {
+                        vm.verifySMSCode().collect {
+                            if(it) {
+                                codeAccepted = true
                             }
                         }
                     }
-
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),
@@ -203,10 +186,7 @@ fun VerificationCodeField(
                     .focusRequester(focusRequesters[index]),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.Green,
-                    unfocusedBorderColor = Color.Gray
-                ),
+                colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
                 textStyle = TextStyle(
                     color = Color.White,
                     textAlign = TextAlign.Center,

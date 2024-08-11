@@ -1,7 +1,5 @@
 package com.lucaskempe.cropy.ui.authentication
 
-import android.app.Activity
-import android.content.Context
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -17,21 +15,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,22 +47,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
-import androidx.work.workDataOf
-import com.lucaskempe.cropy.providers.data.SplashUIModel
-import com.lucaskempe.cropy.services.workers.MailRequestWorker
-import com.lucaskempe.cropy.services.workers.SignUpWorker
+import com.cropy.datastore.ui.UIDataStore
+import com.cropy.datastore.user.UserSessionDataStore
+import com.cropy.entities.ui.UIModel
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.face
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.freckle1
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.freckle2
@@ -87,23 +77,25 @@ import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath7
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath8
 import com.lucaskempe.cropy.ui.cards.ValidatingInputTextField
 import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 
 @Composable
 fun SignUpScreen(
-    context: Context,
-    activity: Activity,
-    navController: NavHostController,
     vm: AuthViewmodel
 ) {
 
-    var splashData by remember { mutableStateOf(SplashUIModel()) }
-    val workManager: WorkManager = WorkManager.getInstance(vm.context)
+    var splashData by remember { mutableStateOf(UIModel()) }
+    val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        context.UIDataStore.data.collect {
+           // splashData = it[2]
+        }
+    }
 
     val vectorPainter = rememberVectorPainter(
         defaultWidth = 530.46f.dp,
@@ -113,6 +105,24 @@ fun SignUpScreen(
         autoMirror = true,
     ) { viewPortWidth, viewPortHeight ->
 
+    }
+
+    var signUpReady by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = signUpReady) {
+        if (signUpReady) {
+            vm.context.UserSessionDataStore.data.collect {
+                navController.navigate("home_graph") {
+                    launchSingleTop = true
+                    restoreState = false
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                        saveState = false
+                    }
+                }
+            }
+        }
+        signUpReady = false
     }
 
     Image(
@@ -154,6 +164,7 @@ fun SignUpScreen(
         Spacer(Modifier.padding(vertical = 10.dp))
 
         ValidatingInputTextField(
+            colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
             inputValue = vm.email,
             updateState = { input -> vm.updateEmail(input) },
             validatorHasErrors = vm.emailHasErrors,
@@ -161,8 +172,9 @@ fun SignUpScreen(
         )
 
         OutlinedTextField(
-            value = vm.usernameField.value,
-            onValueChange = { vm.usernameField.value= it },
+            colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
+            value = vm.usernameField,
+            onValueChange = { vm.usernameField= it },
             label = { Text("Username: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -170,6 +182,7 @@ fun SignUpScreen(
 
 
         ValidatingPasswordTextField(
+            colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
             inputValue = vm.password,
             updateState = { input -> vm.updatePassword(input) },
             validatorHasErrors = vm.passwordHasError,
@@ -177,6 +190,7 @@ fun SignUpScreen(
         )
 
         ValidatingPasswordTextField(
+            colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
             inputValue = vm.repeatPassword,
             updateState = { input -> vm.updateRepeat(input) },
             validatorHasErrors = vm.password != vm.repeatPassword,
@@ -194,25 +208,9 @@ fun SignUpScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    val work = OneTimeWorkRequest.Builder(SignUpWorker::class.java)
-                        .setInputData(
-                            workDataOf(
-                                "email" to vm.email,
-                                "phone" to vm.selectedCountry.value.dialCode.plus(vm.phoneNumber.value),
-                                "username" to vm.usernameField.value.text,
-                                "password" to vm.repeatPassword,
-                                "role" to "USER"
-                            )
-                        )
-                        .build()
-                    workManager.enqueueUniqueWork(
-                        "one_time",
-                        ExistingWorkPolicy.KEEP,
-                        work
-                    )
-                    runBlocking {
-                        delay(2000)
-                        login(workManager,navController,vm)
+                    scope.launch(Dispatchers.IO){
+                        vm.signUp()
+                        vm.login().collect { if (it) { signUpReady = true } }
                     }
                 }) {
                 Text(
@@ -234,9 +232,8 @@ fun SignUpScreen(
 fun SignUpPreview() {
     val context = LocalContext.current
     val navController = rememberNavController()
-    val activity = Activity()
     val vm: AuthViewmodel = hiltViewModel()
-    SignUpScreen(activity = activity, context = context, navController = navController, vm = vm)
+    SignUpScreen(vm = vm)
 }
 
 object JellyFishPaths {

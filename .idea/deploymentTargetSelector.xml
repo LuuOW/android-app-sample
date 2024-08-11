@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-21T15:10:18.169482Z">
+        <DropdownSelection timestamp="2024-08-10T13:10:28.010932Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/lkempe/.android/avd/Pixel_5_API_34.avd" />
+              <DeviceId pluginId="Default" identifier="serial=192.168.1.4:5555;connection=ba93a219" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -51,6 +51,9 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="components">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>

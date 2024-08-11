@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -36,44 +36,43 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.workDataOf
 import coil.compose.AsyncImage
+import com.cropy.datastore.ui.UIDataStore
+import com.cropy.entities.ui.UIModel
 import com.lucaskempe.cropy.R
-import com.lucaskempe.cropy.providers.data.SplashUIDataStore
-import com.lucaskempe.cropy.providers.data.SplashUIModel
-import com.lucaskempe.cropy.services.workers.SplashUIWorker
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
+import com.cropy.workers.UIWorker
+import java.util.concurrent.TimeUnit
 
 
 @Composable
-fun WelcomeScreen(navController: NavHostController) {
+fun WelcomeScreen(navController: NavHostController, vm: AuthViewmodel) {
 
-    var splashData by remember { mutableStateOf(SplashUIModel()) }
-    val context = LocalContext.current
-    val workManager = WorkManager.getInstance(context)
+    var splashData by remember { mutableStateOf(UIModel()) }
 
-
-    LaunchedEffect(key1 = workManager) {
-        while (true) {
-            delay(4000)
-            workManager.enqueueUniqueWork(
-                "one_time_work",
-                ExistingWorkPolicy.KEEP,
-                OneTimeWorkRequest.Builder(SplashUIWorker::class.java)
-                    .setInputData(workDataOf("id" to "1"))
-                    .build()
-            )
-
-            val data = context.SplashUIDataStore.data.first()
-            splashData = data
-        }
+    LaunchedEffect(Unit) {
+            vm.context.UIDataStore.data.collect {
+                splashData = it[0]
+            }
     }
+
+    WelcomeScreenContainer(splashData = splashData, navController = navController)
+
+}
+
+@Composable
+fun WelcomeScreenContainer(
+    splashData: UIModel,
+    navController: NavHostController
+) {
 
     val largeRadialGradient = object : ShaderBrush() {
         override fun createShader(size: Size): Shader {
@@ -182,11 +181,13 @@ fun WelcomeScreen(navController: NavHostController) {
             }
         }
     }
+
 }
 
 @Preview
 @Composable
 fun WelcomePreview() {
     val navController = rememberNavController()
-    WelcomeScreen(navController)
+    val splashData = UIModel()
+    WelcomeScreenContainer(splashData = splashData, navController = navController)
 }
