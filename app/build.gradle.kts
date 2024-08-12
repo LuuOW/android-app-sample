@@ -3,10 +3,11 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    kotlin("kapt") // For Kotlin annotation processing
-    id("com.google.dagger.hilt.android")
-    id("kotlin-parcelize")
+    alias(libs.plugins.kotlinKsp)
     alias(libs.plugins.mapSecrets)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.hiltCompiler)
+    id("kotlin-parcelize")
     id("com.google.gms.google-services")
 }
 
@@ -119,9 +120,6 @@ android {
         viewBinding = true
         buildConfig=true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -140,9 +138,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.graphics.shapes.android)
     implementation(libs.androidx.runtime.livedata)
-    //implementation(libs.compose.preview.renderer)
-    //implementation(libs.androidx.navigation.safe.args.generator)
-    val room_version = "2.6.1"
 
     //firebase
     implementation (libs.firebase.storage)
@@ -159,17 +154,17 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.2.0-alpha01")
 
     // auth
-    implementation("androidx.credentials:credentials:1.3.0-alpha04")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0-alpha04")
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
 
 
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)
 
-    implementation ("androidx.navigation:navigation-runtime-ktx:2.7.7")
+    implementation (libs.androidx.navigation.runtime.ktx)
 
-    implementation ("com.google.android.gms:play-services-maps:18.0.2")
-    implementation ("com.google.maps.android:maps-compose:4.3.3")
+    implementation (libs.play.services.maps.v1802)
+    implementation (libs.maps.compose)
 
 
     implementation (libs.androidx.camera.core)
@@ -183,7 +178,7 @@ dependencies {
 
     // hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.hilt.navigation.fragment)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -194,9 +189,10 @@ dependencies {
     implementation(project(":workers"))
     implementation(project(":repositories"))
     implementation(project(":maps"))
+    implementation(project(":websocket"))
 
     // To use Kotlin annotation processing tool (kapt)
-    kapt("androidx.room:room-compiler:$room_version")
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.coil.compose)

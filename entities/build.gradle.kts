@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    kotlin("kapt") // For Kotlin annotation processing
     id("kotlin-parcelize")
     alias(libs.plugins.kotlinx.serialization)
 }

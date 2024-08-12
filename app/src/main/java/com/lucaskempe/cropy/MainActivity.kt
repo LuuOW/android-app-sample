@@ -12,7 +12,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.ExistingWorkPolicy
@@ -20,7 +19,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.workDataOf
 import com.cropy.datastore.user.UserSessionDataStore
 import com.cropy.workers.UIWorker
-import com.lucaskempe.cropy.providers.websocket.WebSocketReceiver
+import com.lucaskempe.cropy.reicevers.WebSocketReceiver
 import com.lucaskempe.cropy.reicevers.LocationReceiver
 import com.lucaskempe.cropy.ui.authentication.AuthViewmodel
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
@@ -29,7 +28,6 @@ import com.lucaskempe.cropy.viewmodels.UsersViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterial3Api

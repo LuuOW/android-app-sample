@@ -81,7 +81,7 @@
 
         </provider>
 
-        <receiver android:name=".providers.websocket.WebSocketReceiver"
+        <receiver android:name=".reicevers.WebSocketReceiver"
             android:enabled="true"
             android:exported="false">
 

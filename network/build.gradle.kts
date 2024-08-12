@@ -3,9 +3,7 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-
-    kotlin("kapt") // For Kotlin annotation processing
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.kotlinKsp)
     id("kotlin-parcelize")
 }
 
@@ -62,7 +60,7 @@ dependencies {
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
     implementation(libs.androidx.hilt.work)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.android)
     implementation(libs.okhttp)
 

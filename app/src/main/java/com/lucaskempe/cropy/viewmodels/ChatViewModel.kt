@@ -1,20 +1,15 @@
 package com.lucaskempe.cropy.viewmodels
 
 import android.content.Context
-import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.saveable
-import com.google.gson.Gson
-import com.lucaskempe.cropy.providers.websocket.WebSocketClient
+import com.cropy.websocket.WebSocketClient
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltViewModel

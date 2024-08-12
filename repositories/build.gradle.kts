@@ -1,9 +1,7 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-
-    kotlin("kapt") // For Kotlin annotation processing
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.kotlinKsp)
     id("kotlin-parcelize")
 }
 
@@ -47,7 +45,7 @@ dependencies {
     implementation(libs.androidx.datastore.core)
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
     implementation(libs.okhttp)

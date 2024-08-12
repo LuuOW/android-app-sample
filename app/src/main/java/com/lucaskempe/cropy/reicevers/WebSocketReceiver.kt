@@ -1,4 +1,4 @@
-package com.lucaskempe.cropy.providers.websocket
+package com.lucaskempe.cropy.reicevers
 
 import android.content.BroadcastReceiver
 import android.content.Context

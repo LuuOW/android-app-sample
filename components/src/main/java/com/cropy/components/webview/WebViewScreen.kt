@@ -43,18 +43,6 @@ fun WebViewScreen(onBackPressed: () -> Unit = {}, title:String = "Default WebVie
                             Log.d("WebView", "Loading URL: $uri")
                             return super.shouldOverrideUrlLoading(view, request)
                         }
-
-                        override fun onReceivedError(
-                            view: WebView?,
-                            errorCode: Int,
-                            description: String?,
-                            failingUrl: String?
-                        ) {
-                            Log.e(
-                                "WebView",
-                                "Error: $errorCode, $description, URL: $failingUrl"
-                            )
-                        }
                     }
                     loadUrl(url)
                 }

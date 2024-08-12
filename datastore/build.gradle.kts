@@ -38,7 +38,6 @@ dependencies {
     implementation(libs.gson)
 
     implementation(libs.androidx.hilt.work)
-    //kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.android)
 
     implementation (libs.androidx.datastore.preferences)

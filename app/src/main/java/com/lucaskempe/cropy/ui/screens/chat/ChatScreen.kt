@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -41,16 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.work.WorkManager
 import com.google.android.material.snackbar.Snackbar
+import com.lucaskempe.cropy.BuildConfig
 import com.lucaskempe.cropy.R
-import com.lucaskempe.cropy.providers.websocket.Message
-import com.lucaskempe.cropy.providers.websocket.WebSocketClient
 import com.lucaskempe.cropy.ui.screens.chat.models.MessageModel
 import com.lucaskempe.cropy.ui.screens.chat.utils.ChatUtils.formatTimestampToHourMinute
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -62,6 +57,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatVie
     val view = LocalView.current
     var messageText by remember { mutableStateOf("") }
     val hostState = remember { SnackbarHostState() }
+    val wssUrl = BuildConfig.WSS_BASE_URL
 
     var uri by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
@@ -70,7 +66,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatVie
         if (vm.errorMessage.value) {
             Snackbar
                 .make(view, "WSS Connection Failed", Snackbar.LENGTH_SHORT)
-                .setAction("Retry") { vm.webSocketClient.connect() }
+                .setAction("Retry") { vm.webSocketClient.connect(wssUrl) }
                 .setActionTextColor(ContextCompat.getColor(vm.context, R.color.white))
                 .setBackgroundTint(ContextCompat.getColor(vm.context, R.color.notred))
                 .show()
@@ -79,7 +75,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatVie
     }
 
     LaunchedEffect(Unit) {
-        vm.webSocketClient.connect()
+        vm.webSocketClient.connect(wssUrl)
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -88,28 +84,6 @@ fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatVie
             if (it != null) {
                 uri = it.toString()
                 showDialog = true
-/*                val workRequest = OneTimeWorkRequest.Builder(ImageUploadWorker::class.java)
-                    .setInputData(
-                        workDataOf(
-                            "image" to it.toString(),
-                            "filename" to "image.jpg",
-                            "userId" to "6670b2a9cacd892d4c9051be"
-                        )
-                    )
-                    .build()
-                workManager.enqueueUniqueWork(
-                    "one_time",
-                    ExistingWorkPolicy.KEEP,
-                    workRequest
-                )*/
-
-
-                val inputStream = vm.context.contentResolver.openInputStream(it)
-                val bytes = inputStream?.readBytes()
-                val base64Image = bytes?.let { it1 -> Base64.encode(it1) }!!
-
-                vm.webSocketClient.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
-
             }
         }
     )
@@ -157,9 +131,7 @@ fun ChatScreen(navController: NavController, padding: PaddingValues, vm: ChatVie
                     vm.webSocketClient.sendEncodedMessage(base64Image,"sqluser1", "sqluser4", "hello there" )
                     showDialog = false
                 },
-                onDismissRequest = {
-                showDialog = false
-            })
+                onDismissRequest = { showDialog = false })
         }
     }
 }

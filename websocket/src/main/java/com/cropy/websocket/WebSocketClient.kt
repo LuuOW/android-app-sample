@@ -1,12 +1,9 @@
-package com.lucaskempe.cropy.providers.websocket
+package com.cropy.websocket
 
 import android.content.Context
 import android.content.Intent
 import com.google.gson.Gson
-import com.lucaskempe.cropy.BuildConfig
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.lucaskempe.cropy.network.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -26,9 +23,8 @@ class WebSocketClient @Inject constructor(
 
     private var webSocketCli: WebSocket? = null
 
-    fun connect() {
-        val wss = BuildConfig.WSS_BASE_URL
-        val request = Request.Builder().url("$wss/chat?userId=sqluser4").build()
+    fun connect(wssUrl: String) {
+        val request = Request.Builder().url("$wssUrl/chat?userId=sqluser4").build()
         webSocketCli = okHttpClient.newWebSocket(request, this@WebSocketClient)
     }
 

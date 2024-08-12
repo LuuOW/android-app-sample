@@ -2,7 +2,9 @@
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.kotlinKsp) apply false
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
+    alias(libs.plugins.composeCompiler) apply false
+    alias(libs.plugins.hiltCompiler) apply false
     id("com.google.gms.google-services") version "4.4.1" apply false
-    id("com.google.dagger.hilt.android") version "2.49" apply false
 }
