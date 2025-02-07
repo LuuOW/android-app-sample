@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.cropy.components.colors.AppColor
 import com.cropy.datastore.ui.UIDataStore
 import com.cropy.datastore.user.UserSessionDataStore
 import com.cropy.entities.ui.UIModel
@@ -53,55 +55,21 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    navController: NavHostController,
-    vm: AuthViewmodel
+    login: (username: String, password: String) -> Unit = { user, pass -> },
+    forgotPassword: () -> Unit = { }
 ) {
 
     var splashData by remember { mutableStateOf(UIModel()) }
     var loading by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    var loginReady by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
-    LaunchedEffect(Unit){
-        context.UIDataStore.data.collect {
-            splashData = it[1]
-        }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var usernameField by remember { mutableStateOf( TextFieldValue("") ) }
+
+
+    LaunchedEffect(Unit) {
+        context.UIDataStore.data.collect { it.getOrNull(1)?.let { splashData = it } }
     }
-
-    LaunchedEffect(loginReady) {
-        if (loginReady) {
-            navController.navigate("home_graph") {
-                launchSingleTop = true
-                restoreState = false
-                popUpTo(navController.graph.findStartDestination().id) {
-                    inclusive = true
-                    saveState = false
-                }
-            }
-        }
-        loginReady = false
-    }
-
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -136,8 +104,8 @@ fun LoginScreen(
 
         OutlinedTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            value = vm.usernameField,
-            onValueChange = { vm.usernameField = it },
+            value = usernameField,
+            onValueChange = { usernameField = it },
             label = { Text("Username: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -145,8 +113,8 @@ fun LoginScreen(
 
         ValidatingPasswordTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            inputValue = vm.password,
-            updateState = { input -> vm.updatePassword(input) },
+            inputValue = password,
+            updateState = { input -> password = input },
             validatorHasErrors = false,
             isRepeat = false
         )
@@ -163,17 +131,8 @@ fun LoginScreen(
                 modifier = Modifier,
                 enabled = !loading,
                 onClick = {
-                    loading = true
-                    scope.launch(Dispatchers.IO) {
-                        vm.login().collect {
-                            if(it) {
-                                loading = false
-                                vm.context.UserSessionDataStore.data.collect {
-                                    loginReady = true
-                                }
-                            }
-                        }
-                    }
+                    login(usernameField.text, password.text)
+                   // loading = true
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),
@@ -187,13 +146,8 @@ fun LoginScreen(
             }
         }
 
-        ForgotPasswordLabel(
-            {
-                vm.routeIsReset = true
-                navController.navigate("sms_request")
-            },
-            splashData.model_buttons_titles[1]
-        )
+        ForgotPasswordLabel({ forgotPassword()}, splashData.model_buttons_titles[1])
+
         Spacer(Modifier.padding(vertical = 10.dp))
 
         if (!loading) return
@@ -214,15 +168,13 @@ fun ForgotPasswordLabel(onClick: () -> Unit, title: String) {
         style = MaterialTheme.typography.bodySmall, // Adjust style as needed
         modifier = Modifier
             .clickable(onClick = onClick),
-        color = MaterialTheme.colorScheme.primary // Or use a custom color
+        color = AppColor.White
     )
 }
 
 @Preview
 @Composable
 fun LoginPreview() {
-    val vm: AuthViewmodel = hiltViewModel()
-    val navController = rememberNavController()
-    LoginScreen(navController, vm = vm)
+    LoginScreen()
 
 }

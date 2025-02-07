@@ -20,15 +20,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import com.lucaskempe.cropy.R
 
 
 @Composable
 fun ValidatingPasswordTextField(
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-    inputValue: String,
-    updateState: (String) -> Unit,
+    inputValue: TextFieldValue,
+    updateState: (TextFieldValue) -> Unit,
     validatorHasErrors: Boolean,
     isRepeat: Boolean
 ) {
@@ -56,4 +58,10 @@ fun ValidatingPasswordTextField(
             }
         }
     )
+}
+
+@Composable
+@Preview
+fun ValidatingPasswordTextFieldPreview() {
+    ValidatingPasswordTextField(inputValue = TextFieldValue(""), updateState = { TextFieldValue("") }, validatorHasErrors = false, isRepeat = false)
 }

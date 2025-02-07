@@ -38,57 +38,9 @@ class AuthViewmodel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    var code by stateHandle.saveable { mutableStateOf("") }
-
-    var routeIsReset by stateHandle.saveable{ mutableStateOf(false) }
-
-    var selectedCountry by stateHandle.saveable{ mutableStateOf(Country("AR", "Argentina", "+54", "🇦🇷")) }
-    var phoneNumber by stateHandle.saveable { mutableStateOf("3815172294") }
-
-    var email by mutableStateOf("")
-        private set
-
-    val emailHasErrors by derivedStateOf {
-        if (email.isNotEmpty()) {
-            // Email is considered erroneous until it completely matches EMAIL_ADDRESS.
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        } else {
-            false
-        }
-    }
-
-    var password by mutableStateOf("")
-        private set
-
-    var repeatPassword by mutableStateOf("")
-        private set
-
-    val passwordHasError by derivedStateOf {
-        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}$")
-        if (password.isNotEmpty()) {
-            !password.matches(passwordRegex)
-        } else {
-            false
-        }
-    }
-
-    fun updatePassword(input: String) {
-        password = input
-    }
-
-    fun updateRepeat(input: String) {
-        repeatPassword = input
-    }
-
-    fun updateEmail(input: String) {
-        email = input
-    }
-
-    var usernameField by  mutableStateOf(TextFieldValue(""))
-
-    suspend fun login(): StateFlow<Boolean> {
+    suspend fun login(user: String, password: String): StateFlow<Boolean> {
         val state = MutableStateFlow(false)
-        val loginReq = LoginRequest(usernameField.text, password)
+        val loginReq = LoginRequest(user, password)
         val loginCall = authRepository.login(loginReq)
         val loginResult = loginCall.getOrNull()
         if (loginResult != null && loginCall.isSuccess) {
@@ -99,9 +51,9 @@ class AuthViewmodel @Inject constructor(
         return state
     }
 
-    suspend fun signUp(): StateFlow<Boolean> {
+    suspend fun signUp(email: String, phone: String, user: String, password: String): StateFlow<Boolean> {
         val state = MutableStateFlow(false)
-        val request = SignUpRequest(email, selectedCountry.dialCode.plus(phoneNumber), usernameField.text, repeatPassword)
+        val request = SignUpRequest(email = email, phone =  phone, username = user, password = password)
         val call = authRepository.signUp(request)
         val result = call.getOrNull()
         if (call.isSuccess && result != null) {
@@ -112,9 +64,9 @@ class AuthViewmodel @Inject constructor(
         return state
     }
 
-    suspend fun verifySMSCode(): StateFlow<Boolean> {
+    suspend fun verifySMSCode(phone: String, code: String): StateFlow<Boolean> {
         val state = MutableStateFlow(false)
-        val smsReq = SMSVerifyRequest(selectedCountry.dialCode.plus(phoneNumber),code)
+        val smsReq = SMSVerifyRequest(phone,code)
             val result = authRepository.verifySMSCode(smsReq)
             val resultData = result.getOrNull()
             if(result.isSuccess && resultData != null) {
@@ -129,9 +81,9 @@ class AuthViewmodel @Inject constructor(
         return state
     }
 
-    suspend fun requestSMSCode(): StateFlow<Boolean> {
+    suspend fun requestSMSCode(phone: String): StateFlow<Boolean> {
         val state = MutableStateFlow(false)
-        val request = SMSRequest(selectedCountry.dialCode.plus(phoneNumber))
+        val request = SMSRequest(phone)
         val call = authRepository.requestSMSCode(request)
         val result = call.getOrNull()
         if (call.isSuccess && result !=null) {
@@ -142,7 +94,7 @@ class AuthViewmodel @Inject constructor(
         return state
     }
 
-    suspend fun requestEmailCode(): StateFlow<Boolean> {
+    suspend fun requestEmailCode(email: String): StateFlow<Boolean> {
         val state = MutableStateFlow(false)
         val request = EmailRequest(email)
         val call = authRepository.requestEmailCode(request)
@@ -155,8 +107,8 @@ class AuthViewmodel @Inject constructor(
         return state
     }
 
-    suspend fun resetPassword() {
-        val request = PasswordResetRequest(selectedCountry.dialCode.plus(phoneNumber), password)
+    suspend fun resetPassword(phone: String, password: String) {
+        val request = PasswordResetRequest(phone, password)
         authRepository.resetPassword(request)
     }
 

@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -54,55 +55,14 @@ import java.util.concurrent.TimeUnit
 
 
 @Composable
-fun WelcomeScreen(navController: NavHostController, vm: AuthViewmodel) {
+fun WelcomeScreen(navController: NavHostController) {
 
     var splashData by remember { mutableStateOf(UIModel()) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-            vm.context.UIDataStore.data.collect {
-                splashData = it[0]
-            }
+        context.UIDataStore.data.collect { it.getOrNull(0)?.let { splashData = it } }
     }
-
-    WelcomeScreenContainer(splashData = splashData, navController = navController)
-
-}
-
-@Composable
-fun WelcomeScreenContainer(
-    splashData: UIModel,
-    navController: NavHostController
-) {
-
-    val largeRadialGradient = object : ShaderBrush() {
-        override fun createShader(size: Size): Shader {
-            val biggerDimension = maxOf(size.height, size.width)
-            return RadialGradientShader(
-                colors = listOf(Color(0xFF9FA8DA), Color(0xFF000000)),
-                center = size.center,
-                radius = biggerDimension / 2f,
-                colorStops = listOf(0f, 0.95f)
-            )
-        }
-    }
-
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
 
     Box(
     ) {
@@ -181,13 +141,11 @@ fun WelcomeScreenContainer(
             }
         }
     }
-
 }
 
 @Preview
 @Composable
 fun WelcomePreview() {
     val navController = rememberNavController()
-    val splashData = UIModel()
-    WelcomeScreenContainer(splashData = splashData, navController = navController)
+    WelcomeScreen(navController = navController)
 }

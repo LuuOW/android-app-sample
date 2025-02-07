@@ -2,6 +2,7 @@ package com.lucaskempe.cropy.ui.authentication
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,50 +26,37 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.cropy.entities.ui.UIModel
 import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
+import com.lucaskempe.cropy.ui.passwordHasError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
 fun ResetPasswordScreen(
-    navController: NavHostController,
-    vm: AuthViewmodel
+    onResetRequest: (password: String) -> Unit = { pass -> },
 ) {
 
     var splashData by remember { mutableStateOf(UIModel()) }
-    val scope = rememberCoroutineScope()
-
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
+    var password by remember { mutableStateOf( TextFieldValue("") ) }
+    var repeatPassword by remember { mutableStateOf( TextFieldValue("") ) }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
 
@@ -81,19 +70,18 @@ fun ResetPasswordScreen(
             textDecoration = TextDecoration.Underline
         )
 
-        Spacer(Modifier.padding(vertical = 10.dp))
 
         ValidatingPasswordTextField(
-            inputValue = vm.password,
-            updateState = { input -> vm.updatePassword(input) },
-            validatorHasErrors = vm.passwordHasError,
+            inputValue = password,
+            updateState = { input -> password = input },
+            validatorHasErrors = passwordHasError(password),
             isRepeat = false,
         )
 
         ValidatingPasswordTextField(
-            inputValue = vm.repeatPassword,
-            updateState = { input -> vm.updateRepeat(input) },
-            validatorHasErrors = vm.password != vm.repeatPassword,
+            inputValue = repeatPassword,
+            updateState = { input -> repeatPassword = input },
+            validatorHasErrors = password != repeatPassword,
             isRepeat = true
         )
 
@@ -105,19 +93,19 @@ fun ResetPasswordScreen(
                     pressedElevation = 12.dp,
                     disabledElevation = 0.dp
                 ),
+                enabled = !passwordHasError(password),
                 modifier = Modifier,
                 onClick = {
-                    scope.launch(Dispatchers.IO){
-                        vm.resetPassword()
-                    }
-                    navController.navigate("login") {
+                    onResetRequest(password.text)
+
+                    /*navController.navigate("login") {
                         launchSingleTop = true
                         restoreState = false
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
                             saveState = false
                         }
-                    }
+                    }*/
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),
@@ -132,4 +120,10 @@ fun ResetPasswordScreen(
         }
     }
 
+}
+
+@Composable
+@Preview
+fun ResetPasswordScreenPreview() {
+    ResetPasswordScreen()
 }

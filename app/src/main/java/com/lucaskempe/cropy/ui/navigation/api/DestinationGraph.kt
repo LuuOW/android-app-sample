@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +55,7 @@ import com.lucaskempe.cropy.ui.screens.MapScreen
 import com.lucaskempe.cropy.ui.screens.chat.ChatScreen
 import com.lucaskempe.cropy.viewmodels.ChatViewModel
 import com.lucaskempe.cropy.viewmodels.UsersViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 @ExperimentalMaterial3Api
@@ -67,18 +71,74 @@ fun DestinationGraph(
     val nvm: NavigationViewModel = hiltViewModel()
     val vm: UsersViewModel = hiltViewModel()
     val router: RouterDestinity = RouterImplementation(nvm.destSet)
+    var routeIsReset by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var phoneNumber by remember { mutableStateOf("") }
 
     router.createGraph(
         "auth_graph",
         "welcome",
         mutableMapOf(
-            "welcome" to { WelcomeScreen(navController, authViewmodel) },
-            "login" to { LoginScreen(navController, vm = authViewmodel) },
-            "sign_up" to { SignUpScreen(vm=authViewmodel) },
-            "verification" to { CodeVerificationScreen(navController, authViewmodel) },
-            "reset" to { ResetPasswordScreen(navController,authViewmodel) },
-            "mail_request" to { MailRequestScreen(navController = navController, vm = authViewmodel) },
-            "sms_request" to { SMSRequestScreen(authViewmodel, navController) }
+            "welcome" to { WelcomeScreen(navController) },
+
+            "login" to { LoginScreen(
+                login = { user, pass ->
+                    scope.launch { authViewmodel.login(user, pass).collect {
+                        if (it) {
+                            navController.navigate("home_graph")
+                        }
+                    } }
+                },
+                forgotPassword = {
+                    routeIsReset = true
+                    navController.navigate("sms_request")
+                }
+            ) },
+
+            "sign_up" to { SignUpScreen(signUp = { email, password, username ->
+                scope.launch {
+                    authViewmodel.signUp(email, phoneNumber, username, password).collect {
+                        if (it) {
+                            navController.navigate("home_graph")
+                        }
+                    }
+                }
+            }) },
+
+            "verification" to { CodeVerificationScreen(onSubmitCode = { code ->
+                scope.launch {
+                    authViewmodel.verifySMSCode(phoneNumber, code).collect {
+                        if (it && routeIsReset) {
+                            navController.navigate("reset")
+                        } else if (it && !routeIsReset) {
+                            navController.navigate("sign_up")
+                        }
+                    }
+                }
+            }) },
+
+            "reset" to { ResetPasswordScreen(onResetRequest = { password ->
+                scope.launch { authViewmodel.resetPassword(phoneNumber, password) }
+                navController.navigate("welcome")
+            }) },
+
+            "mail_request" to { MailRequestScreen(onCodeRequested = { email ->
+                scope.launch { authViewmodel.requestEmailCode(email).collect {
+                    if (it) {
+                        navController.navigate("verification")
+                    }
+                } }
+            }) },
+
+            "sms_request" to { SMSRequestScreen( requestSMS =  { phone ->
+                phoneNumber = phone
+                scope.launch { authViewmodel.requestSMSCode(phone).collect {
+                    if (it) {
+                        navController.navigate("verification")
+                    }
+                } }
+            } ) }
+
         )
     )
     router.createGraph(

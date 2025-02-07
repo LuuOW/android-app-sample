@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,7 +31,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -43,57 +43,31 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.navigation.compose.rememberNavController
+import com.cropy.datastore.ui.UIDataStore
 import com.cropy.entities.ui.UIModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun CodeVerificationScreen(
-    navController: NavHostController,
-    vm: AuthViewmodel
+    onSubmitCode: (code: String) -> Unit = {},
 ) {
 
     var splashData by remember { mutableStateOf(UIModel()) }
-    val scope = rememberCoroutineScope()
-    var codeAccepted by remember { mutableStateOf(false) }
+    var code by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
-
-    LaunchedEffect(codeAccepted) {
-        if (codeAccepted && vm.routeIsReset) {
-            navController.navigate("reset")
-        } else if (codeAccepted && !vm.routeIsReset){
-            navController.navigate("sign_up")
-        }
-        codeAccepted = false
+    LaunchedEffect(Unit) {
+        context.UIDataStore.data.collect { it.getOrNull(0)?.let { splashData = it } }
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
 
@@ -110,7 +84,7 @@ fun CodeVerificationScreen(
         Spacer(Modifier.padding(vertical = 10.dp))
 
         VerificationCodeField(onFilled = {
-            vm.code = it
+            code = it
         })
 
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -124,13 +98,7 @@ fun CodeVerificationScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    scope.launch(Dispatchers.IO) {
-                        vm.verifySMSCode().collect {
-                            if(it) {
-                                codeAccepted = true
-                            }
-                        }
-                    }
+                    onSubmitCode(code)
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),
@@ -146,7 +114,6 @@ fun CodeVerificationScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationCodeField(
     length: Int = 6,
@@ -196,6 +163,12 @@ fun VerificationCodeField(
             )
         }
     }
+}
+
+@Composable
+@Preview
+fun CodeVerificationScreenPreview() {
+    CodeVerificationScreen()
 }
 
 

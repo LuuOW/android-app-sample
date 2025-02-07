@@ -80,11 +80,12 @@ import com.lucaskempe.cropy.viewmodels.UsersViewModel
                 BottomBarItem.Build,
                 BottomBarItem.Chat
             )
-            val bottomBarRoutes = listOf(
+            val bottomBarRoutes =  listOf(
                 "home",
                 "inspector",
                 "build"
             )
+
             val showTopBar = remember { mutableStateOf(false) }
             val showBottomBar = remember { mutableStateOf(false) }
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

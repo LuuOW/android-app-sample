@@ -50,10 +50,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -68,49 +70,15 @@ import kotlinx.parcelize.Parcelize
 
 @Composable
 fun SMSRequestScreen(
-    vm: AuthViewmodel,
-    navController: NavController
+    requestSMS: (phone: String) -> Unit = { }
 ) {
 
-    val scope = rememberCoroutineScope()
     var splashData by remember { mutableStateOf(UIModel()) }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        context.UIDataStore.data.collect {
-            splashData = it[2]
-        }
+        context.UIDataStore.data.collect { it.getOrNull(2)?.let { splashData = it } }
     }
-
-    val largeRadialGradient = object : ShaderBrush() {
-        override fun createShader(size: Size): Shader {
-            val biggerDimension = maxOf(size.height, size.width)
-            return RadialGradientShader(
-                colors = listOf(Color(0xFF9FA8DA), Color(0xFF000000)),
-                center = size.center,
-                radius = biggerDimension / 2f,
-                colorStops = listOf(0f, 0.95f)
-            )
-        }
-    }
-
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -131,7 +99,85 @@ fun SMSRequestScreen(
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
-        PhoneNumberPicker(vm)
+        PhoneNumberPicker(onFilled = { requestSMS(it) }, buttonTitle = splashData.model_buttons_titles[0])
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PhoneNumberPicker(
+    onFilled: (String) -> Unit = { },
+    buttonTitle: String = ""
+) {
+    var showCountryPicker by remember { mutableStateOf(false) }
+    var phoneNumber by remember { mutableStateOf("") }
+    var selectedCountry by remember { mutableStateOf(Country("AR", "Argentina", "+54", "🇦🇷")) }
+
+
+    val countries = listOf(
+        Country("UR", "Uruguay", "+59", "🇺🇾"),
+        Country("AR", "Argentina", "+54", "🇦🇷"),
+        Country("CA", "Canada", "+1", "🇨🇦"),
+        Country("US", "United States", "+1", "🇺🇸")
+    )
+    
+    Column {
+
+        OutlinedTextField(
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            value = phoneNumber,
+            onValueChange = { phoneNumber = it },
+            label = { Text("Phone Number", color = Color.White) }, // Dark gray label
+            modifier = Modifier.width(300.dp),
+            leadingIcon = {
+                Row(
+                    modifier = Modifier
+                        .clickable { showCountryPicker = !showCountryPicker }
+                        .padding(8.dp)
+                ) {
+                    Text(selectedCountry.flag, fontSize = 18.sp, color = Color.White) // Slightly larger flag
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(selectedCountry.dialCode, fontSize = 16.sp, color = Color.White) // Slightly larger dial code
+                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = Color.White) // Gray icon
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White, unfocusedTextColor = Color.White),
+        )
+
+        if (showCountryPicker) {
+            AlertDialog(
+                onDismissRequest = { showCountryPicker = false },
+                title = { Text("Select Country") },
+                text = {
+                    var searchQuery by remember { mutableStateOf("") }
+
+                    Column {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            label = { Text("Search") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        CountryPicker(
+                            countries.filter { it.name.contains(searchQuery, ignoreCase = true) },
+                            onCountrySelected = { country ->
+                                selectedCountry = country
+                                showCountryPicker = false
+                            }
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { showCountryPicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
 
         Spacer(Modifier.padding(vertical = 10.dp))
 
@@ -146,14 +192,11 @@ fun SMSRequestScreen(
                     .width(300.dp)
                     .height(40.dp),
                 onClick = {
-                    scope.launch(Dispatchers.IO) {
-                        vm.requestSMSCode()
-                    }
-                    navController.navigate("verification")
+                    onFilled(selectedCountry.dialCode.plus(phoneNumber))
                 }
             ) {
                 Text(
-                    text = splashData.model_buttons_titles.first(),
+                    text = buttonTitle,
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -163,77 +206,14 @@ fun SMSRequestScreen(
                 )
             }
         }
+
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Preview
 @Composable
-fun PhoneNumberPicker(
-    vm: AuthViewmodel
-) {
-    var showCountryPicker by remember { mutableStateOf(false) }
-
-    val countries = listOf(
-        Country("UR", "Uruguay", "+59", "🇺🇾"),
-        Country("AR", "Argentina", "+54", "🇦🇷"),
-        Country("CA", "Canada", "+1", "🇨🇦"),
-        Country("US", "United States", "+1", "🇺🇸")
-    )
-
-    OutlinedTextField(
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        value = vm.phoneNumber,
-        onValueChange = { vm.phoneNumber = it },
-        label = { Text("Phone Number", color = Color.White) }, // Dark gray label
-        modifier = Modifier.width(300.dp),
-        leadingIcon = {
-            Row(
-                modifier = Modifier
-                    .clickable { showCountryPicker = !showCountryPicker }
-                    .padding(8.dp)
-            ) {
-                Text(vm.selectedCountry.flag, fontSize = 18.sp, color = Color.White) // Slightly larger flag
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(vm.selectedCountry.dialCode, fontSize = 16.sp, color = Color.White) // Slightly larger dial code
-                Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = Color.White) // Gray icon
-            }
-        },
-        colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White, unfocusedTextColor = Color.White),
-        )
-
-    if (showCountryPicker) {
-        AlertDialog(
-            onDismissRequest = { showCountryPicker = false },
-            title = { Text("Select Country") },
-            text = {
-                var searchQuery by remember { mutableStateOf("") }
-
-                Column {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        label = { Text("Search") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    CountryPicker(
-                        countries.filter { it.name.contains(searchQuery, ignoreCase = true) },
-                        onCountrySelected = { country ->
-                            vm.selectedCountry = country
-                            showCountryPicker = false
-                        }
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showCountryPicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
+fun PhoneNumberPickerPreview() {
+    PhoneNumberPicker()
 }
 
 @Composable
@@ -258,3 +238,9 @@ fun CountryPicker(countries: List<Country>, onCountrySelected: (Country) -> Unit
 
 @Parcelize
 data class Country(val code: String, val name: String, val dialCode: String, val flag: String): Parcelable
+
+@Preview
+@Composable
+fun SMSRequestScreenPreview() {
+    SMSRequestScreen()
+}

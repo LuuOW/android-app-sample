@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,15 +46,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import com.cropy.datastore.ui.UIDataStore
-import com.cropy.datastore.user.UserSessionDataStore
 import com.cropy.entities.ui.UIModel
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.face
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.freckle1
@@ -77,64 +74,32 @@ import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath7
 import com.lucaskempe.cropy.ui.authentication.JellyFishPaths.tentaclePath8
 import com.lucaskempe.cropy.ui.cards.ValidatingInputTextField
 import com.lucaskempe.cropy.ui.cards.ValidatingPasswordTextField
+import com.lucaskempe.cropy.ui.emailHasErrors
+import com.lucaskempe.cropy.ui.passwordHasError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun SignUpScreen(
-    vm: AuthViewmodel
+    signUp: (email: String, password: String, username: String) -> Unit = { email, password, username -> }
 ) {
 
     var splashData by remember { mutableStateOf(UIModel()) }
-    val navController = rememberNavController()
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    var repeatPassword by remember { mutableStateOf( TextFieldValue("") ) }
+
+    var password by remember { mutableStateOf( TextFieldValue("") ) }
+    var email by remember { mutableStateOf( TextFieldValue("") ) }
+    var usernameField by remember { mutableStateOf( TextFieldValue("") ) }
+
     LaunchedEffect(Unit) {
-        context.UIDataStore.data.collect {
-           // splashData = it[2]
-        }
+        context.UIDataStore.data.collect { it.getOrNull(2)?.let { splashData = it } }
     }
-
-    val vectorPainter = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
-        defaultHeight = 563.1f.dp,
-        viewportWidth = 530.46f,
-        viewportHeight = 563.1f,
-        autoMirror = true,
-    ) { viewPortWidth, viewPortHeight ->
-
-    }
-
-    var signUpReady by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = signUpReady) {
-        if (signUpReady) {
-            vm.context.UserSessionDataStore.data.collect {
-                navController.navigate("home_graph") {
-                    launchSingleTop = true
-                    restoreState = false
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        inclusive = true
-                        saveState = false
-                    }
-                }
-            }
-        }
-        signUpReady = false
-    }
-
-    Image(
-        vectorPainter,
-        contentDescription = "Jellyfish",
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient)
-    )
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -165,16 +130,16 @@ fun SignUpScreen(
 
         ValidatingInputTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            inputValue = vm.email,
-            updateState = { input -> vm.updateEmail(input) },
-            validatorHasErrors = vm.emailHasErrors,
+            inputValue = email,
+            updateState = { input -> email = input },
+            validatorHasErrors = emailHasErrors(email),
             field = "Email"
         )
 
         OutlinedTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            value = vm.usernameField,
-            onValueChange = { vm.usernameField= it },
+            value = usernameField,
+            onValueChange = { usernameField = it },
             label = { Text("Username: ", color = Color.White) },
             //visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -183,17 +148,17 @@ fun SignUpScreen(
 
         ValidatingPasswordTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            inputValue = vm.password,
-            updateState = { input -> vm.updatePassword(input) },
-            validatorHasErrors = vm.passwordHasError,
+            inputValue = password,
+            updateState = { input -> password = input },
+            validatorHasErrors = passwordHasError(password),
             isRepeat = false,
         )
 
         ValidatingPasswordTextField(
             colors = OutlinedTextFieldDefaults.colors().copy(focusedTextColor = Color.White),
-            inputValue = vm.repeatPassword,
-            updateState = { input -> vm.updateRepeat(input) },
-            validatorHasErrors = vm.password != vm.repeatPassword,
+            inputValue = repeatPassword,
+            updateState = { input -> repeatPassword = input },
+            validatorHasErrors = password.text != repeatPassword.text,
             isRepeat = true
         )
 
@@ -208,10 +173,7 @@ fun SignUpScreen(
                 ),
                 modifier = Modifier,
                 onClick = {
-                    scope.launch(Dispatchers.IO){
-                        vm.signUp()
-                        vm.login().collect { if (it) { signUpReady = true } }
-                    }
+                    signUp(email.text, password.text, usernameField.text)
                 }) {
                 Text(
                     text = splashData.model_buttons_titles.first(),
@@ -232,8 +194,7 @@ fun SignUpScreen(
 fun SignUpPreview() {
     val context = LocalContext.current
     val navController = rememberNavController()
-    val vm: AuthViewmodel = hiltViewModel()
-    SignUpScreen(vm = vm)
+    SignUpScreen()
 }
 
 object JellyFishPaths {

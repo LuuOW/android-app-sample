@@ -7,13 +7,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable
 fun ValidatingInputTextField(
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
-    inputValue: String,
-    updateState: (String) -> Unit,
+    inputValue: TextFieldValue,
+    updateState: (TextFieldValue) -> Unit,
     validatorHasErrors: Boolean,
     field: String
 ) {
@@ -30,4 +32,10 @@ fun ValidatingInputTextField(
             }
         }
     )
+}
+
+@Preview
+@Composable
+fun ValidatingInputTextFieldPreview() {
+    ValidatingInputTextField(inputValue = TextFieldValue(""), updateState = {TextFieldValue("")}, validatorHasErrors =  false, field =  "Email")
 }
