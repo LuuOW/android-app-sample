@@ -6,6 +6,13 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="asset_statements" translatable="false">
+[{
+  \"include\": \"https://signin.example.com/.well-known/assetlinks.json\"
+}]
+</string>
+
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

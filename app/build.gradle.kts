@@ -13,13 +13,13 @@ plugins {
 
 
 android {
+
     namespace = "com.lucaskempe.cropy"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.lucaskempe.cropy"
-        minSdk = 29
-        targetSdk = 34
+        minSdk = 31
         versionCode = 1
         versionName = "1.0"
 
