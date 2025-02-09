@@ -6,6 +6,8 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="signing_in_with_passkeys">A passkey is a faster and safer way to sign in than a password. Your account is create with one unless you choose another option.</string>
+
     <string name="asset_statements" translatable="false">
 [{
   \"include\": \"https://signin.example.com/.well-known/assetlinks.json\"

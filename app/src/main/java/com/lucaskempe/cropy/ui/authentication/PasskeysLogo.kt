@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.plus
 import androidx.core.graphics.times
@@ -48,10 +49,14 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun PasskeysLogo() {
+fun PasskeysLogo(
+    scaleX: Float = 1f,
+    scaleY: Float = 1f,
+    padding: Dp = 0.dp
+) {
 
     Box(
-        modifier = Modifier.size(300.dp)
+        modifier = Modifier.size(300.dp).scale(scaleX, scaleY).padding(padding)
     ) {
 
         Box(
