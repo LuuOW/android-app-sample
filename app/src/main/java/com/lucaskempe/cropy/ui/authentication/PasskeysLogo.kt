@@ -52,19 +52,27 @@ import kotlin.math.sin
 fun PasskeysLogo(
     scaleX: Float = 1f,
     scaleY: Float = 1f,
-    padding: Dp = 0.dp
+    paddingLeft: Dp = 0.dp,
+    paddingRight: Dp = 0.dp,
+    paddingTop: Dp = 0.dp,
+    paddingBottom: Dp = 0.dp,
+    bg: Color = Color.LightGray,
 ) {
 
     Box(
-        modifier = Modifier.size(300.dp).scale(scaleX, scaleY).padding(padding)
+        modifier = Modifier
+            .size(280.dp)
+            .padding(start = paddingLeft, end = paddingRight, top = paddingTop, bottom = paddingBottom)
+            .scale(scaleX, scaleY)
     ) {
 
         Box(
             modifier = Modifier
                 .padding(start = 200.dp, bottom = 60.dp)
                 .align(Alignment.Center)
+                .scale(scaleX, scaleY)
         ) {
-            LinesFromBottomLeft()
+            LinesFromBottomLeft(scaleX = scaleX, scaleY = scaleY)
         }
 
         Box(
@@ -73,7 +81,8 @@ fun PasskeysLogo(
                 .size(130.dp) // Adjust size as needed
                 .clip(RoundedCornerShape(75.dp)) // Adjust corner radius
                 .alpha(0.38f)
-                .background(Color.LightGray), // S
+                .scale(scaleX, scaleY)
+                .background(bg), // S
         )
 
         Icon(
@@ -81,7 +90,8 @@ fun PasskeysLogo(
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(80.dp), // Adjust icon size within the box
+                .size(80.dp) // Adjust icon size within the box
+            .scale(scaleX, scaleY),
             tint = Color.Black // Optional: Set the icon tint
         )
 
@@ -90,9 +100,10 @@ fun PasskeysLogo(
                 .align(Alignment.Center)
                 .padding(bottom = 180.dp, end = 90.dp)
                 .alpha(.99f)
-                .scale(scaleX = .7f, scaleY = .7f)
+                .size(140.dp)
+                .scale(scaleX, scaleY)
         ) {
-            RoundedPattern()
+            RoundedPattern(scaleX, scaleY)
         }
 
 
@@ -100,13 +111,13 @@ fun PasskeysLogo(
             modifier = Modifier
                 .padding(end = 150.dp, top = 40.dp)
                 .align(Alignment.Center)
-                .scale(scaleY = .7f, scaleX = .7f)
-                .size(100.dp) // Adjust size as needed
+                .scale(scaleY = scaleY, scaleX = scaleX)
+                .size(70.dp) // Adjust size as needed
                 .clip(CircleShape)
                 .alpha(.99f)
                 .background(Color(0xFF8EA0B3))
         ) {
-            FaceIcon()
+            FaceIcon(scaleX = scaleX, scaleY = scaleY)
         }
 
         Box(
@@ -114,7 +125,7 @@ fun PasskeysLogo(
                 .padding(start = 180.dp, top = 20.dp)
                 .align(Alignment.Center)
         ) {
-            FingerPrintIcon()
+            FingerPrintIcon(scaleX, scaleY)
         }
 
     }
@@ -128,9 +139,13 @@ fun LinesFromBottomLeft(
     color: Color = Color.Black, // Color of the lines
     size: Int = 100, // Size of the "invisible" square
     strokeWidth: Float = 3f, // Width of the lines
-    shorteningFactor: Float = 0.8f // Factor to shorten the outer lines (0.0f - 1.0f)
+    shorteningFactor: Float = 0.8f, // Factor to shorten the outer lines (0.0f - 1.0f)
+    scaleX: Float,
+    scaleY: Float,
 ) {
-    Canvas(modifier = Modifier.size(size.dp)) {
+    Canvas(modifier = Modifier
+        .scale(scaleX, scaleY)
+        .size(size.dp)) {
         val bottomLeft = Offset(0f, size.toFloat()) // Bottom-left corner of the Canvas
         val angles = listOf(270f, 315f, 0f) // Angles for the lines
 
@@ -145,20 +160,13 @@ fun LinesFromBottomLeft(
 
             drawLine(
                 color = color,
-                start = bottomLeft,
+                start = if(index == 1) Offset(30f, 70f) else if (index == 0) Offset(0f, 70f) else Offset(30f, size.toFloat()),
                 end = endPoint,
                 strokeWidth = strokeWidth,
                 cap = StrokeCap.Round // Optional: for rounded line ends
             )
         }
 
-        // Face outline
-        drawCircle(
-            color = Color.White,
-            center = bottomLeft,
-            radius = 30f,
-            style = Fill // Adjust stroke width as needed
-        )
     }
 
 
@@ -166,7 +174,10 @@ fun LinesFromBottomLeft(
 
 
 @Composable
-fun FingerPrintIcon() {
+fun FingerPrintIcon(
+    scaleX: Float,
+    scaleY: Float
+) {
     val vertices = remember {
         val radius = 1f
         floatArrayOf(
@@ -215,6 +226,7 @@ fun FingerPrintIcon() {
                 }
             }
             .size(400.dp)
+            .scale(scaleX, scaleY)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.fingerprint_24px),
@@ -228,7 +240,10 @@ fun FingerPrintIcon() {
 }
 
 @Composable
-fun RoundedPattern() {
+fun RoundedPattern(
+    scaleX: Float,
+    scaleY: Float
+) {
     val vertices = remember {
         val radius = 1f
         val innerRadius = .3f
@@ -285,14 +300,15 @@ fun RoundedPattern() {
                     }
                 }
             }
-            .size(400.dp)
+            .size(140.dp)
+            .scale(scaleX, scaleY)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.pattern_24px),
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(100.dp), // Adjust icon size within the box
+                .size(80.dp), // Adjust icon size within the box
             tint = Color.White // Optional: Set the icon tint
         )
     }
@@ -301,8 +317,11 @@ fun RoundedPattern() {
 }
 
 @Composable
-fun FaceIcon(color: Color = Color.Black, size: Int = 280) {
-    Canvas(modifier = Modifier.size(size.dp)) {
+fun FaceIcon(color: Color = Color.Black, size: Int = 190, scaleX: Float, scaleY: Float) {
+    Canvas(modifier = Modifier
+        .size(size.dp)
+        .scale(scaleX, scaleY)
+    ) {
         val center = Offset(size / 2f, size / 2f)
         val radius = size / 3f
 

@@ -1,5 +1,6 @@
 package com.lucaskempe.cropy.ui.authentication
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -69,11 +72,10 @@ fun PasskeysSignUpScreen(
                 modifier = Modifier.fillMaxWidth()
                     .padding(end = 15.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    Column(modifier = Modifier){
+                Box {
+                    Column(
+                        modifier = Modifier
+                    ){
                         Text(
                             modifier = Modifier
                                 .padding(10.dp)
@@ -89,8 +91,10 @@ fun PasskeysSignUpScreen(
                         Text("Other ways to sign in", style = AppTypography.bodyM, modifier = Modifier.padding(10.dp))
 
                     }
-                    
+
+                    PasskeysLogo(bg = Color.White)
                 }
+
             }
 
 
