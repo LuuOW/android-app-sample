@@ -1,5 +1,6 @@
 package com.lucaskempe.cropy.ui.authentication
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -48,7 +51,9 @@ fun PasskeysSignUpScreen(
         AppTopBar(onLeadingIconPressed = { onBackPressed() })
 
         Column(
-            modifier = Modifier.padding(start = 15.dp)
+            modifier = Modifier
+                .padding(start = 15.dp, end = 15.dp)
+                .fillMaxWidth()
         ) {
 
             Text(text = "Sign Up", style = AppTypography.titleL)
@@ -69,16 +74,24 @@ fun PasskeysSignUpScreen(
             Text(text = "Signing In", style = AppTypography.bodyM)
             Spacer(Modifier.size(10.dp))
             Card(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(end = 15.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(140.dp)
             ) {
-                Box {
+
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(end = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
                     Column(
                         modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ){
                         Text(
                             modifier = Modifier
-                                .padding(10.dp)
                                 .width(250.dp),
                             text =
                             buildAnnotatedString {
@@ -88,14 +101,14 @@ fun PasskeysSignUpScreen(
                                 pop() // End bold style
                             }
                         )
-                        Text("Other ways to sign in", style = AppTypography.bodyM, modifier = Modifier.padding(10.dp))
+                        Text("Other ways to sign in", style = AppTypography.bodyM)
 
                     }
-
-                    PasskeysLogo(bg = Color.White)
                 }
 
             }
+
+            PasskeysLogo(bg = Color.White)
 
 
         }
@@ -103,6 +116,9 @@ fun PasskeysSignUpScreen(
     }
 
 }
+
+// Example usage:
+
 
 @Preview(showBackground = true)
 @Composable

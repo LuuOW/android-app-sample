@@ -1,6 +1,5 @@
 package com.lucaskempe.cropy.ui.authentication
 
-import android.graphics.ColorSpace.Rgb
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -19,24 +18,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.plus
 import androidx.core.graphics.times
@@ -50,60 +41,40 @@ import kotlin.math.sin
 
 @Composable
 fun PasskeysLogo(
-    scaleX: Float = 1f,
-    scaleY: Float = 1f,
-    paddingLeft: Dp = 0.dp,
-    paddingRight: Dp = 0.dp,
-    paddingTop: Dp = 0.dp,
-    paddingBottom: Dp = 0.dp,
     bg: Color = Color.LightGray,
 ) {
 
     Box(
         modifier = Modifier
-            .size(280.dp)
-            .padding(start = paddingLeft, end = paddingRight, top = paddingTop, bottom = paddingBottom)
-            .scale(scaleX, scaleY)
+            .size(260.dp)
+            .fillMaxSize()
     ) {
-
-        Box(
-            modifier = Modifier
-                .padding(start = 200.dp, bottom = 60.dp)
-                .align(Alignment.Center)
-                .scale(scaleX, scaleY)
-        ) {
-            LinesFromBottomLeft(scaleX = scaleX, scaleY = scaleY)
-        }
 
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
                 .size(130.dp) // Adjust size as needed
                 .clip(RoundedCornerShape(75.dp)) // Adjust corner radius
-                .alpha(0.38f)
-                .scale(scaleX, scaleY)
                 .background(bg), // S
-        )
-
-        Icon(
-            painter = painterResource(id = R.drawable.passkey_24px),
-            contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(80.dp) // Adjust icon size within the box
-            .scale(scaleX, scaleY),
-            tint = Color.Black // Optional: Set the icon tint
-        )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.passkey_24px),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(80.dp), // Adjust icon size within the box
+                tint = Color.Black // Optional: Set the icon tint
+            )
+        }
 
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(bottom = 180.dp, end = 90.dp)
                 .alpha(.99f)
-                .size(140.dp)
-                .scale(scaleX, scaleY)
+                .size(80.dp)
         ) {
-            RoundedPattern(scaleX, scaleY)
+            RoundedPattern()
         }
 
 
@@ -111,21 +82,31 @@ fun PasskeysLogo(
             modifier = Modifier
                 .padding(end = 150.dp, top = 40.dp)
                 .align(Alignment.Center)
-                .scale(scaleY = scaleY, scaleX = scaleX)
                 .size(70.dp) // Adjust size as needed
                 .clip(CircleShape)
                 .alpha(.99f)
                 .background(Color(0xFF8EA0B3))
         ) {
-            FaceIcon(scaleX = scaleX, scaleY = scaleY)
+            FaceIcon()
         }
 
         Box(
             modifier = Modifier
-                .padding(start = 180.dp, top = 20.dp)
+                .padding(start = 170.dp, top = 20.dp)
+                .size(180.dp)
                 .align(Alignment.Center)
         ) {
-            FingerPrintIcon(scaleX, scaleY)
+            FingerPrintIcon()
+        }
+
+
+        Box(
+            modifier = Modifier
+                .padding(start = 180.dp, bottom = 70.dp)
+                .size(65.dp)
+                .align(Alignment.Center)
+        ) {
+            LinesFromBottomLeft()
         }
 
     }
@@ -139,12 +120,9 @@ fun LinesFromBottomLeft(
     color: Color = Color.Black, // Color of the lines
     size: Int = 100, // Size of the "invisible" square
     strokeWidth: Float = 3f, // Width of the lines
-    shorteningFactor: Float = 0.8f, // Factor to shorten the outer lines (0.0f - 1.0f)
-    scaleX: Float,
-    scaleY: Float,
+    shorteningFactor: Float = 0.8f,
 ) {
     Canvas(modifier = Modifier
-        .scale(scaleX, scaleY)
         .size(size.dp)) {
         val bottomLeft = Offset(0f, size.toFloat()) // Bottom-left corner of the Canvas
         val angles = listOf(270f, 315f, 0f) // Angles for the lines
@@ -174,10 +152,7 @@ fun LinesFromBottomLeft(
 
 
 @Composable
-fun FingerPrintIcon(
-    scaleX: Float,
-    scaleY: Float
-) {
+fun FingerPrintIcon() {
     val vertices = remember {
         val radius = 1f
         floatArrayOf(
@@ -209,8 +184,10 @@ fun FingerPrintIcon(
             perVertexRounding = rounding
         )
     }
+
     Box(
         modifier = Modifier
+            .size(180.dp)
             .drawWithCache {
                 val roundedPolygonPath = polygon.toPath().asComposePath()
                 onDrawBehind {
@@ -225,8 +202,6 @@ fun FingerPrintIcon(
                     }
                 }
             }
-            .size(400.dp)
-            .scale(scaleX, scaleY)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.fingerprint_24px),
@@ -240,10 +215,7 @@ fun FingerPrintIcon(
 }
 
 @Composable
-fun RoundedPattern(
-    scaleX: Float,
-    scaleY: Float
-) {
+fun RoundedPattern() {
     val vertices = remember {
         val radius = 1f
         val innerRadius = .3f
@@ -293,15 +265,14 @@ fun RoundedPattern(
             .drawWithCache {
                 val roundedPolygonPath = polygon.toPath().asComposePath()
                 onDrawBehind {
-                    scale(size.width * 0.8f, size.width * 0.8f) {
+                    scale(size.height*1.3f, size.width*1.3f) {
                         translate(size.width * 0.5f, size.height * 0.5f) {
                             drawPath(roundedPolygonPath, color = Color(red = 150, green =212 ,199))
                         }
                     }
                 }
             }
-            .size(140.dp)
-            .scale(scaleX, scaleY)
+            .size(80.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.pattern_24px),
@@ -317,10 +288,9 @@ fun RoundedPattern(
 }
 
 @Composable
-fun FaceIcon(color: Color = Color.Black, size: Int = 190, scaleX: Float, scaleY: Float) {
+fun FaceIcon(color: Color = Color.Black, size: Int = 190) {
     Canvas(modifier = Modifier
         .size(size.dp)
-        .scale(scaleX, scaleY)
     ) {
         val center = Offset(size / 2f, size / 2f)
         val radius = size / 3f
@@ -343,14 +313,15 @@ fun FaceIcon(color: Color = Color.Black, size: Int = 190, scaleX: Float, scaleY:
 
         // Nose (L-shape)
         val nosePath = Path().apply {
+            moveTo(center.x, center.y)
+            lineTo(center.x, center.y + radius / 6f)
             moveTo(center.x, center.y + radius / 6f)
-            lineTo(center.x + radius / 8f, center.y + radius / 2f)
-            lineTo(center.x, center.y + radius / 2f)
+            lineTo(center.x - radius / 16f, center.y + radius / 6f)
         }
         drawPath(
             path = nosePath,
             color = color,
-            style = Stroke(width = 2f, cap = StrokeCap.Round) // Rounded nose tip
+            style = Stroke(width = 3f, cap = StrokeCap.Round) // Rounded nose tip
         )
 
 
@@ -360,9 +331,9 @@ fun FaceIcon(color: Color = Color.Black, size: Int = 190, scaleX: Float, scaleY:
             startAngle = 90f,
             sweepAngle = 40f,
             useCenter = false, // Don't connect the arc ends to the center
-            topLeft = Offset(center.x - radius / 2f, center.y - 30f),
+            topLeft = Offset(center.x - radius / 2f, center.y - 25f),
             size = androidx.compose.ui.geometry.Size(radius, radius),
-            style = Stroke(width = 2f, cap = StrokeCap.Round) // Rounded smile ends
+            style = Stroke(width = 3f, cap = StrokeCap.Round) // Rounded smile ends
         )
     }
 }
